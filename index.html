@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FAF3E3">
 <title>오늘의 사주 메뉴 | 사주팔자 오행으로 보는 오늘 뭐 먹지</title>
 <meta name="description" content="생년월일만 입력하면 사주팔자와 오행으로 오늘 먹을 메뉴를 알려드려요. 개인 운세 메뉴, 커플 궁합 메뉴, 밥값 내기까지 완전 무료로 즐겨보세요.">
 <meta name="keywords" content="사주메뉴,오늘뭐먹지,오행,사주팔자,궁합,밥값내기,오늘의운세,메뉴추천">
@@ -35,9 +36,17 @@
   --b1:#EADFC2;--b2:#DCC998;
   --gold:#B07A22;--gold2:#C99A3A;--golddim:#8C6A22;
   --purple:#7A4E8C;--purpleg:#7A4E8C14;
-  --tx:#2B2118;--txd:#6B5A44;--txm:#A0906F;
+  --tx:#2B2118;--txd:#6B5A44;--txm:#7A6A4D;
   --green:#3F7D53;--red:#B8412E;--rdark:#8A2E1E;
+  --sh-sm:0 2px 8px #2B211809;
+  --sh-md:0 6px 20px #2B211814;
+  --ease:cubic-bezier(.22,1,.36,1);
 }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+a:focus-visible,button:focus-visible,.bsel:focus-visible,.mood-chip:focus-visible,.cal-btn:focus-visible,.tab-btn:focus-visible,.date-input:focus-visible,.person-name-input:focus-visible,.pay-mode-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+.btn-go:active,.btn-share:active,.btn-retry:active,.btn-img:active,.tab-btn:active,.mood-chip:active,.cal-btn:active,.pay-mode-btn:active{transform:scale(.96)}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 1px 1px,#00000006 1px,transparent 0);background-size:22px 22px}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0}
 .star{position:absolute;border-radius:50%;background:var(--gold2);animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s)}
@@ -51,14 +60,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(20px,5vw,32px);font-weight:900;line-height:1.3;margin-bottom:8px;color:var(--tx)}
 .gold-txt{background:linear-gradient(135deg,var(--red),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:12px;color:var(--txd);line-height:1.8}
+.hero-sub{font-size:13px;color:var(--txd);line-height:1.8;max-width:300px;margin:10px auto 0}
 .main{max-width:540px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
-.input-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:22px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}
+.input-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:22px;margin-bottom:14px;box-shadow:var(--sh-sm)}
 .slabel{font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:14px;text-align:center;opacity:.95}
 .birth-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
 .birth-group{display:flex;flex-direction:column;gap:5px}
 .blbl{font-size:10px;color:var(--txm);text-align:center}
-.bsel{background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:9px 6px;outline:none;width:100%;appearance:none;text-align:center;cursor:pointer;transition:border-color .2s}
+.bsel{background-color:var(--s2);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237A6A4D' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:13px;border:1px solid var(--b2);border-radius:8px;color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:14px;padding:11px 20px 11px 6px;outline:none;width:100%;appearance:none;text-align:center;cursor:pointer;transition:border-color .2s}
 .bsel:focus{border-color:var(--gold)}
 .bsel option{background:#fff}
 /* 내 사주 미리보기 */
@@ -74,8 +83,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .ohaeng-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
 .relation-badge{font-size:11px;color:var(--txd);text-align:center;margin-top:6px}
 /* 기분 */
-.mood-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
-.mood-chip{background:var(--s2);border:1px solid var(--b2);color:var(--txd);font-size:11px;padding:6px 12px;border-radius:14px;cursor:pointer;transition:all .15s;user-select:none}
+.mood-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.mood-chip{background:var(--s2);border:1px solid var(--b2);color:var(--txd);font-size:12px;padding:9px 6px;border-radius:16px;cursor:pointer;transition:all .15s;user-select:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mood-chip:hover{border-color:var(--gold);color:var(--tx)}
 .mood-chip.active{background:var(--purpleg);border-color:var(--purple);color:var(--purple);font-weight:700}
 /* 버튼 */
@@ -85,6 +94,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .result-wrap{display:none;position:relative;z-index:1;margin-bottom:30px}
 .result-wrap.show{display:block;animation:rv .5s ease-out}
 @keyframes rv{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.stagger-item{opacity:0;animation:staggerIn .45s var(--ease) forwards}
+@keyframes staggerIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 /* 사주 배너 */
 .saju-banner{background:linear-gradient(135deg,#FBF0DA,#F5E4C0);border:1px solid var(--golddim);border-radius:12px;padding:14px 18px;margin-bottom:12px}
 .saju-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
@@ -97,7 +108,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .relation-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:700;margin:2px 0}
 .relation-desc{font-size:11px;opacity:.8}
 /* 운세 카드 */
-.fortune-card{background:linear-gradient(160deg,#FFFDF7,#FBF0DA);border:1px solid var(--golddim);border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 4px 16px #00000008}
+.fortune-card{background:linear-gradient(160deg,#FFFDF7,#FBF0DA);border:1px solid var(--golddim);border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:var(--sh-md)}
 .fortune-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse,var(--purpleg) 0%,transparent 60%);pointer-events:none}
 .card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .cicon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
@@ -115,7 +126,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .score-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--gold));transition:width .8s ease;width:0}
 .score-num{font-size:13px;font-weight:700;color:var(--gold)}
 /* 메뉴 카드 */
-.menu-card{background:linear-gradient(160deg,#FBFFF9,#EAF4E5);border:1px solid #C9DCC0;border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 4px 16px #00000008}
+.menu-card{background:linear-gradient(160deg,#FBFFF9,#EAF4E5);border:1px solid #C9DCC0;border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:var(--sh-md)}
 .menu-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(ellipse,#3F7D5310 0%,transparent 60%);pointer-events:none}
 .menu-name-big{font-family:'Noto Serif KR',serif;font-size:28px;font-weight:900;color:var(--tx);margin:4px 0;letter-spacing:-0.5px}
 .menu-sub-txt{font-size:12px;color:var(--green);margin-bottom:14px}
@@ -143,7 +154,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .diary-stat-num{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:900;color:var(--gold)}
 .diary-stat-lbl{font-size:9px;color:var(--txm);letter-spacing:1px;margin-top:2px}
 .diary-empty{text-align:center;padding:50px 20px;color:var(--txm);font-size:13px;line-height:1.8}
-.diary-item{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.diary-item{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh-sm)}
 .diary-date-badge{width:52px;flex-shrink:0;text-align:center;background:var(--s2);border-radius:8px;padding:6px 4px}
 .diary-date-day{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:900;color:var(--tx);line-height:1}
 .diary-date-md{font-size:9px;color:var(--txm);margin-top:2px}
@@ -165,17 +176,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .btn-img:disabled{opacity:.5;cursor:wait}
 /* 탭 */
 .tab-nav{max-width:540px;margin:0 auto 16px;padding:0 16px;position:relative;z-index:1;display:flex;gap:8px}
-.tab-btn{flex:1;padding:12px;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
-.tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff}
+.tab-btn{flex:1;padding:12px 6px;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s var(--ease);text-align:center}
+.tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff;box-shadow:var(--sh-sm);transform:translateY(-1px)}
 .tab-section{display:none}
-.tab-section.active{display:block}
+.tab-section.active{display:block;animation:tabIn .3s var(--ease)}
+@keyframes tabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* 궁합 */
 .compat-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .person-card{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:14px}
 .person-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:10px;text-align:center}
 .person-ohaeng{text-align:center;margin-top:8px;padding:6px;background:var(--s1);border-radius:6px;font-size:12px;font-weight:700;display:none}
 .person-ohaeng.show{display:block}
-.compat-score-card{background:linear-gradient(160deg,#FBF6EC,#F5E9CD);border:1px solid var(--golddim);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden;box-shadow:0 4px 16px #00000008}
+.compat-score-card{background:linear-gradient(160deg,#FBF6EC,#F5E9CD);border:1px solid var(--golddim);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--sh-md)}
 .compat-score-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse,var(--purpleg) 0%,transparent 60%);pointer-events:none}
 .compat-score-num{font-family:'Noto Serif KR',serif;font-size:56px;font-weight:900;line-height:1}
 .compat-score-label{font-size:10px;color:var(--txm);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
@@ -196,7 +208,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .date-input::-webkit-calendar-picker-indicator{cursor:pointer;filter:invert(45%) sepia(35%) saturate(700%) hue-rotate(0deg);opacity:.8}
 /* 밥값 탭 */
 .person-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-.person-entry{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:12px 14px;position:relative}
+.person-entry{background:var(--s2);border:1px solid var(--b2);border-radius:10px;padding:12px 14px;position:relative;box-shadow:var(--sh-sm)}
 .person-entry-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .person-num{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--red));color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .person-name-input{flex:1;background:var(--s1);border:1px solid var(--b1);border-radius:6px;color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:6px 10px;outline:none}
@@ -214,7 +226,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .pay-mode-btn.active.good{background:linear-gradient(135deg,var(--gold),#8C6A22);border-color:var(--gold);color:white}
 /* 순위 결과 */
 .rank-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-.rank-item{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:all .3s}
+.rank-item{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:all .3s;box-shadow:var(--sh-sm)}
 .rank-item.winner{background:linear-gradient(135deg,#FBF0DA,#F5E4C0);border-color:var(--gold);animation:pulse-gold 1.5s ease-in-out infinite}
 .rank-item.loser{background:linear-gradient(135deg,#FBE9E4,#F5DAD2);border-color:var(--red);animation:pulse-red 1.5s ease-in-out infinite}
 @keyframes pulse-gold{0%,100%{box-shadow:0 0 0 0 #B07A2230}50%{box-shadow:0 0 0 8px #B07A2210}}
@@ -247,6 +259,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <section class="hero">
   <div class="orb">🍚</div>
   <h1>사주팔자로 분석하는<br><span class="gold-txt">오늘의 내 메뉴</span></h1>
+  <p class="hero-sub">생년월일만 입력하면 나의 오행 기운에 맞는<br>오늘의 메뉴를 알려드려요</p>
 </section>
 
 <div class="tab-nav">
@@ -726,6 +739,16 @@ const FORTUNES={
 function seededRand(seed){let x=Math.sin(seed+1)*10000;return x-Math.floor(x)}
 function pick(arr,seed){return arr[Math.floor(seededRand(seed)*arr.length)]}
 
+// 결과 카드들이 순서대로 살짝 떠오르며 나타나는 연출
+function staggerReveal(sel){
+  document.querySelectorAll(sel).forEach((el,i)=>{
+    el.classList.remove('stagger-item');
+    void el.offsetWidth;
+    el.style.animationDelay=(i*70)+'ms';
+    el.classList.add('stagger-item');
+  });
+}
+
 // 점수 기본값 + 관계 보정
 function calcScores(relKey,moodIdx,seed){
   const adj=REL_DATA[relKey].scoreAdj;
@@ -909,6 +932,7 @@ function generate(){
   setTimeout(()=>document.querySelectorAll('.score-bar').forEach(b=>b.style.width=b.dataset.w),150);
 
   document.getElementById('result').classList.add('show');
+  staggerReveal('#shareCard0 > *');
   document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n⚠️ 오늘의 금기 음식: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
@@ -1179,6 +1203,7 @@ function determinePayer(){
   });
 
   document.getElementById('payResult').classList.add('show');
+  staggerReveal('#shareCard2 > *');
   document.getElementById('payResult').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   // 공유 텍스트
@@ -1446,6 +1471,7 @@ function generateCompat(){
   document.getElementById('compatTip').textContent='"'+tipFinal+'"';
 
   document.getElementById('compatResult').classList.add('show');
+  staggerReveal('#shareCard1 > *');
   document.getElementById('compatResult').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   window._compatShareText=`💑 ${todayStr} 오행 궁합 메뉴\n\n${OH_EMOJI[oh1]} ${OH_NAME[oh1]} ${yp1.name}년 + ${OH_EMOJI[oh2]} ${OH_NAME[oh2]} ${yp2.name}년\n\n${ctd.label} ${score}점\n${ctd.desc}\n${dayNote}\n\n🍽️ 함께 먹기 좋은 메뉴: ${menuData.m}\n${reasonFinal}\n\n"${tipFinal}"\n\n#오행궁합 #사주메뉴 #오늘뭐먹지`;
