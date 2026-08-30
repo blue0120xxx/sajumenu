@@ -27,6 +27,7 @@
 <meta name="twitter:image" content="https://sajumenu.com/og-image.png">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -46,7 +47,7 @@
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 a:focus-visible,button:focus-visible,.bsel:focus-visible,.mood-chip:focus-visible,.cal-btn:focus-visible,.tab-btn:focus-visible,.date-input:focus-visible,.person-name-input:focus-visible,.pay-mode-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
-.btn-go:active,.btn-share:active,.btn-retry:active,.btn-img:active,.tab-btn:active,.mood-chip:active,.cal-btn:active,.pay-mode-btn:active{transform:scale(.96)}
+.btn-go:active,.btn-share:active,.btn-retry:active,.btn-img:active,.btn-kakao:active,.tab-btn:active,.mood-chip:active,.cal-btn:active,.pay-mode-btn:active{transform:scale(.96)}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(circle at 1px 1px,#00000006 1px,transparent 0);background-size:22px 22px}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0}
 .star{position:absolute;border-radius:50%;background:var(--gold2);animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s)}
@@ -144,7 +145,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .tw-label{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--purple);text-transform:uppercase;opacity:.9;margin-bottom:8px}
 .tw-text{font-family:'Noto Serif KR',serif;font-size:14px;color:var(--tx);line-height:1.8}
 /* 공유 */
-.share-row{display:flex;gap:8px}
+.share-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.btn-kakao{padding:11px;border:none;border-radius:10px;background:#FEE500;color:#3C2E1E;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-kakao:hover{filter:brightness(1.05)}
+.btn-kakao:disabled{opacity:.5;cursor:wait}
 /* 하단 면책 문구 */
 .disclaimer{max-width:540px;margin:8px auto 0;padding:14px 20px 30px;text-align:center;font-size:11px;color:var(--txm);line-height:1.8;position:relative;z-index:1}
 .disclaimer span{opacity:.85}
@@ -343,6 +347,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     </div>
     </div>
     <div class="share-row">
+      <button class="btn-kakao" onclick="shareKakao(window._kakaoText0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
       <button class="btn-img" id="imgBtn0" onclick="downloadCard('shareCard0','imgBtn0','사주메뉴')">🖼️ 이미지 저장</button>
       <button class="btn-retry" onclick="generate()">🔮 다시 보기</button>
@@ -419,6 +424,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <div class="today-word"><div class="tw-label">✦ 오늘 두 사람에게 ✦</div><div class="tw-text" id="compatTip"></div></div>
     </div>
     <div class="share-row">
+      <button class="btn-kakao" onclick="shareKakao(window._kakaoTextC)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn2" onclick="copyCompat()">📋 텍스트 복사</button>
       <button class="btn-img" id="imgBtn1" onclick="downloadCard('shareCard1','imgBtn1','궁합메뉴')">🖼️ 이미지 저장</button>
       <button class="btn-retry" onclick="generateCompat()">💑 다시 보기</button>
@@ -476,6 +482,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     </div>
 
     <div class="share-row">
+      <button class="btn-kakao" onclick="shareKakao(window._kakaoTextP)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn3" onclick="copyPayResult()">📋 텍스트 복사</button>
       <button class="btn-img" id="imgBtn2" onclick="downloadCard('shareCard2','imgBtn2','밥값결정')">🖼️ 이미지 저장</button>
       <button class="btn-retry" onclick="determinePayer()">⚡ 다시 결정</button>
@@ -936,6 +943,7 @@ function generate(){
   document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n⚠️ 오늘의 금기 음식: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
+  window._kakaoText0=`🔮 오늘 나는 ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운! 사주로 알아본 오늘의 메뉴는 "${menuData.m}" 🍽️ 너의 메뉴는 뭘까?`;
 
   // 다이어리에 자동 저장
   saveDiaryEntry(td,myOh,menuData.m,rd.label,rd.emoji);
@@ -1211,6 +1219,7 @@ function determinePayer(){
     `${['1','2','3','4','5'][i]}위 ${r.displayName}: ${r.score}점 (${OH_NAME[r.myOh]} · ${REL_DESC[r.rel]})`
   ).join('\n');
   window._payShareText=`💸 ${todayStr} 오늘의 밥값 주인공\n\n🏆 오늘 일진: ${todayGanZhi}\n\n${rankText}\n\n${isLoser?'😅':'👑'} ${payer.displayName}님이 오늘 밥값!\n${reason}\n\n#오행운세 #밥값내기 #사주팔자`;
+  window._kakaoTextP=`💸 오늘 밥값 주인공은 ${payer.displayName}님! 우리도 사주로 밥값 정해볼까?`;
 }
 
 function copyPayResult(){
@@ -1241,6 +1250,14 @@ async function downloadCard(elId,btnId,filenamePrefix){
     brand.innerHTML='<span style="display:inline-block;background:linear-gradient(135deg,#B07A22,#B8412E);color:#fff;font-size:9px;font-weight:700;letter-spacing:2px;padding:3px 10px;border-radius:2px;margin-right:8px;font-family:\'Noto Sans KR\',sans-serif;">사주팔자</span>오늘의 사주 메뉴';
     const clone=el.cloneNode(true);
     clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+    // 복제된 요소는 등장 애니메이션이 처음부터 다시 실행되어(0%인 투명한 상태부터 시작)
+    // 캡처 시점에 아직 다 안 나타난 카드가 생길 수 있어, 캡처 전 즉시 완전히 보이게 고정한다
+    clone.querySelectorAll('.stagger-item').forEach(n=>{
+      n.style.animation='none';
+      n.style.opacity='1';
+      n.style.transform='none';
+    });
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
     wrap.appendChild(brand);
     wrap.appendChild(clone);
     const foot=document.createElement('div');
@@ -1475,6 +1492,7 @@ function generateCompat(){
   document.getElementById('compatResult').scrollIntoView({behavior:'smooth',block:'nearest'});
 
   window._compatShareText=`💑 ${todayStr} 오행 궁합 메뉴\n\n${OH_EMOJI[oh1]} ${OH_NAME[oh1]} ${yp1.name}년 + ${OH_EMOJI[oh2]} ${OH_NAME[oh2]} ${yp2.name}년\n\n${ctd.label} ${score}점\n${ctd.desc}\n${dayNote}\n\n🍽️ 함께 먹기 좋은 메뉴: ${menuData.m}\n${reasonFinal}\n\n"${tipFinal}"\n\n#오행궁합 #사주메뉴 #오늘뭐먹지`;
+  window._kakaoTextC=`💑 우리 궁합 ${score}점! (${ctd.label}) 오늘 함께 먹기 좋은 메뉴는 "${menuData.m}" — 우리 궁합 메뉴도 보러가기`;
 }
 
 function copyCompat(){
@@ -1490,6 +1508,28 @@ function copyResult(){
   navigator.clipboard.writeText(text).then(()=>{
     const btn=document.getElementById('cpBtn');btn.textContent='✓ 복사됨!';btn.classList.add('ok');
     setTimeout(()=>{btn.textContent='📋 결과 복사';btn.classList.remove('ok')},2000);
+  });
+}
+
+// ── 카카오톡 공유 ──
+// 카카오 디벨로퍼스(https://developers.kakao.com)에서 앱 등록 후
+// "앱 키 > JavaScript 키"를 아래에 붙여넣어야 실제로 작동합니다.
+// (플랫폼 > Web 사이트 도메인에 https://sajumenu.com 등록 필수)
+const KAKAO_JS_KEY='여기에_카카오_JavaScript_키를_입력하세요';
+if(window.Kakao && KAKAO_JS_KEY && !KAKAO_JS_KEY.startsWith('여기에') && !Kakao.isInitialized()){
+  Kakao.init(KAKAO_JS_KEY);
+}
+
+function shareKakao(text){
+  if(!text)return;
+  if(!window.Kakao || !Kakao.isInitialized()){
+    alert('카카오톡 공유는 아직 설정 중이에요. 카카오 디벨로퍼스에서 JavaScript 키를 등록하면 사용할 수 있어요.');
+    return;
+  }
+  Kakao.Share.sendDefault({
+    objectType:'text',
+    text,
+    link:{mobileWebUrl:'https://sajumenu.com/',webUrl:'https://sajumenu.com/'}
   });
 }
 </script>
