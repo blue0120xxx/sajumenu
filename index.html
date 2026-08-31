@@ -82,6 +82,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .pillar-type{font-size:8px;letter-spacing:2px;color:var(--txm);text-transform:uppercase;margin-bottom:2px}
 .ohaeng-row{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap}
 .ohaeng-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
+.oh-sub{opacity:.6;font-weight:400;font-size:.85em;margin-left:2px}
 .relation-badge{font-size:11px;color:var(--txd);text-align:center;margin-top:6px}
 /* 기분 */
 .mood-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
@@ -590,6 +591,12 @@ const OH_EMOJI=['🌿','🔥','🌍','⚡','💧'];
 const OH_COLOR=['#3C7A5B','#B8412E','#B07A22','#5B6B7A','#2F5C8A'];
 const OH_TASTE=['신맛','쓴맛','단맛','매운맛','짠맛'];
 const OH_KEY  =['성장·창조','열정·표현','안정·중재','결단·정의','지혜·유연'];
+// "목형/화형" 같은 한자식 표현이 낯선 사람들을 위한 쉬운 별명 — 라벨/배지 등 눈에 띄는 곳에서 우선 사용
+const OH_NICK =['나무형','불꽃형','대지형','칼날형','물결형'];
+// 배지 등 HTML 안에서 별명을 크게, 한자 표기는 작게 보조로 붙여서 보여준다
+function ohLabel(i){return `${OH_NICK[i]} <span class="oh-sub">${OH_NAME[i]}(${OH_CHAR[i]})</span>`}
+// 순수 텍스트(textContent)용 — 별명 뒤에 한자 표기를 괄호로 붙인다
+function ohLabelText(i){return `${OH_NICK[i]}(${OH_NAME[i]}·${OH_CHAR[i]})`}
 
 // 오행별 성격 분석 (년주+일주로 정해지는 '나의 오행' 기준 — 매일 바뀌지 않는 고정 콘텐츠)
 const OH_PERSONA=[
@@ -909,15 +916,15 @@ function updateInfo(){
     <div class="pillar-item"><div class="pillar-type">년주</div><div class="pillar-char" style="color:${OH_COLOR[yp.oh]}">${yp.char}</div><div class="pillar-name">${yp.name}</div></div>
     <div class="pillar-item"><div class="pillar-type">일주(생일)</div><div class="pillar-char" style="color:${OH_COLOR[dp.oh]}">${dp.char}</div><div class="pillar-name">${dp.name}</div></div>
     <div class="pillar-item" style="opacity:.6"><div class="pillar-type">${dayLabel} 일진</div><div class="pillar-char" style="color:${OH_COLOR[todayOh]}">${tdp.char}</div><div class="pillar-name">${tdp.name}</div></div>
-    <div class="pillar-item"><div class="pillar-type">나의 오행</div><div class="pillar-char">${OH_EMOJI[myOh]}</div><div class="pillar-name">${OH_NAME[myOh]}(${OH_CHAR[myOh]})</div></div>
+    <div class="pillar-item"><div class="pillar-type">나의 오행</div><div class="pillar-char">${OH_EMOJI[myOh]}</div><div class="pillar-name">${OH_NICK[myOh]}</div></div>
   `;
 
   // 오행 배지
   const or=document.getElementById('ohaengRow');
   or.innerHTML=`
-    <span class="ohaeng-badge" style="background:${OH_COLOR[myOh]}22;border:1px solid ${OH_COLOR[myOh]}66;color:${OH_COLOR[myOh]}">${OH_EMOJI[myOh]} 나 : ${OH_NAME[myOh]}(${OH_CHAR[myOh]})</span>
+    <span class="ohaeng-badge" style="background:${OH_COLOR[myOh]}22;border:1px solid ${OH_COLOR[myOh]}66;color:${OH_COLOR[myOh]}">${OH_EMOJI[myOh]} 나 : ${ohLabel(myOh)}</span>
     <span style="color:var(--txm);font-size:14px">vs</span>
-    <span class="ohaeng-badge" style="background:${OH_COLOR[todayOh]}22;border:1px solid ${OH_COLOR[todayOh]}66;color:${OH_COLOR[todayOh]}">${OH_EMOJI[todayOh]} ${dayLabel} : ${OH_NAME[todayOh]}(${OH_CHAR[todayOh]})</span>
+    <span class="ohaeng-badge" style="background:${OH_COLOR[todayOh]}22;border:1px solid ${OH_COLOR[todayOh]}66;color:${OH_COLOR[todayOh]}">${OH_EMOJI[todayOh]} ${dayLabel} : ${ohLabel(todayOh)}</span>
   `;
   document.getElementById('relationBadge').textContent=`${rd.emoji} ${rd.label} — ${rd.desc}`;
 
@@ -955,8 +962,8 @@ function generate(){
   // 운세 텍스트
   const fortuneTemplate=pick(FORTUNES[rel],seed+3);
   const fill=s=>s
-    .replace(/{mOH}/g,`${OH_NAME[myOh]}(${OH_CHAR[myOh]})`)
-    .replace(/{tOH}/g,`${OH_NAME[todayOh]}(${OH_CHAR[todayOh]})`)
+    .replace(/{mOH}/g,ohLabelText(myOh))
+    .replace(/{tOH}/g,ohLabelText(todayOh))
     .replace(/{yp}/g,yp.name)
     .replace(/{dp}/g,dp.name);
 
@@ -965,8 +972,8 @@ function generate(){
 
   // 한마디
   const words=[
-    `${OH_NAME[myOh]}의 기운을 가진 자는 ${OH_TASTE[myOh]}에서 힘을 얻는다.`,
-    `오늘의 ${OH_NAME[todayOh]} 기운을 알고 움직이는 자가 하루를 이긴다.`,
+    `${ohLabelText(myOh)}의 기운을 가진 자는 ${OH_TASTE[myOh]}에서 힘을 얻는다.`,
+    `오늘의 ${ohLabelText(todayOh)} 기운을 알고 움직이는 자가 하루를 이긴다.`,
     `${yp.name}년 ${dp.name}일의 기운은 오늘도 당신 안에 흐른다.`,
     `${rd.emoji} ${rd.label} — 이 사실을 아는 것만으로 오늘이 달라진다.`,
     `${OH_KEY[myOh]}의 기운이 오늘 당신을 이끈다.`,
@@ -978,7 +985,7 @@ function generate(){
     <div class="sp-item"><div class="sp-label">년주</div><div class="sp-char" style="color:${OH_COLOR[yp.oh]}">${yp.char}</div><div class="sp-name">${yp.name}</div></div>
     <div class="sp-item"><div class="sp-label">일주</div><div class="sp-char" style="color:${OH_COLOR[dp.oh]}">${dp.char}</div><div class="sp-name">${dp.name}</div></div>
     <div class="sp-item"><div class="sp-label">오늘 일진</div><div class="sp-char" style="color:${OH_COLOR[todayOh]}">${tdp.char}</div><div class="sp-name">${tdp.name}</div></div>
-    <div class="sp-item"><div class="sp-label">나의 오행</div><div class="sp-char">${OH_EMOJI[myOh]}</div><div class="sp-name">${OH_NAME[myOh]}(${OH_CHAR[myOh]})</div></div>
+    <div class="sp-item"><div class="sp-label">나의 오행</div><div class="sp-char">${OH_EMOJI[myOh]}</div><div class="sp-name">${OH_NICK[myOh]}</div></div>
   `;
   document.getElementById('rRelation').innerHTML=`
     <div class="relation-result" style="background:${OH_COLOR[myOh]}11;border:1px solid ${OH_COLOR[myOh]}44">
@@ -993,11 +1000,11 @@ function generate(){
   const supportPartner=GEN.findIndex(v=>v===myOh); // 나를 채워주는 상대
   const genPartner=GEN[myOh]; // 내 덕에 빛나는 상대
   const challengePartner=CTRL.findIndex(v=>v===myOh); // 나를 시험하는 상대
-  document.getElementById('personaSub').textContent=`${OH_NAME[myOh]}(${OH_CHAR[myOh]}) · ${OH_KEY[myOh]}`;
+  document.getElementById('personaSub').textContent=`${persona.title} · ${OH_KEY[myOh]}`;
   document.getElementById('personaTraits').innerHTML=persona.traits.map(t=>`<span class="persona-tag">${t}</span>`).join('');
   document.getElementById('personaStrength').textContent=persona.strength;
   document.getElementById('personaCaution').textContent=persona.caution;
-  document.getElementById('personaCompat').textContent=`${persona.title}인 당신을 채워주는 든든한 상대는 ${OH_NAME[supportPartner]}(${OH_CHAR[supportPartner]})형, 당신 덕분에 빛나는 상대는 ${OH_NAME[genPartner]}(${OH_CHAR[genPartner]})형이에요. 반대로 ${OH_NAME[challengePartner]}(${OH_CHAR[challengePartner]})형과는 부딪히기 쉬우니 서로 조금 더 배려가 필요해요.`;
+  document.getElementById('personaCompat').textContent=`${persona.title}인 당신을 채워주는 든든한 상대는 ${OH_NICK[supportPartner]}, 당신 덕분에 빛나는 상대는 ${OH_NICK[genPartner]}이에요. 반대로 ${OH_NICK[challengePartner]}과는 부딪히기 쉬우니 서로 조금 더 배려가 필요해요.`;
 
   document.getElementById('rSub').textContent=`${y}년 ${m}월 ${d}일생${calLabel} · ${yp.name}년 ${dp.name}일 · ${todayStr}`;
   document.getElementById('fortuneText').textContent=fill(fortuneTemplate);
@@ -1066,8 +1073,8 @@ function renderDiary(){
 
   statsEl.innerHTML=`
     <div class="diary-stat"><div class="diary-stat-num">${diary.length}</div><div class="diary-stat-lbl">총 기록</div></div>
-    <div class="diary-stat"><div class="diary-stat-num" style="color:${OH_COLOR[topOh]}">${OH_EMOJI[topOh]}</div><div class="diary-stat-lbl">최다 오행 · ${OH_NAME[topOh]}</div></div>
-    <div class="diary-stat"><div class="diary-stat-num">${max}</div><div class="diary-stat-lbl">${OH_NAME[topOh]} 기운 횟수</div></div>
+    <div class="diary-stat"><div class="diary-stat-num" style="color:${OH_COLOR[topOh]}">${OH_EMOJI[topOh]}</div><div class="diary-stat-lbl">최다 오행 · ${OH_NICK[topOh]}</div></div>
+    <div class="diary-stat"><div class="diary-stat-num">${max}</div><div class="diary-stat-lbl">${OH_NICK[topOh]} 기운 횟수</div></div>
   `;
 
   listEl.innerHTML=diary.map(e=>{
@@ -1075,7 +1082,7 @@ function renderDiary(){
     return `<div class="diary-item">
       <div class="diary-date-badge"><div class="diary-date-day">${parseInt(dd)}</div><div class="diary-date-md">${parseInt(mm)}월 · ${yy.slice(2)}년</div></div>
       <div class="diary-oh-badge" style="background:${OH_COLOR[e.oh]}22;border:1px solid ${OH_COLOR[e.oh]}66">${OH_EMOJI[e.oh]}</div>
-      <div class="diary-info"><div class="diary-menu">${e.menu}</div><div class="diary-desc">${e.relEmoji} ${e.relLabel} · ${OH_NAME[e.oh]}(${OH_CHAR[e.oh]}) 기운</div></div>
+      <div class="diary-info"><div class="diary-menu">${e.menu}</div><div class="diary-desc">${e.relEmoji} ${e.relLabel} · ${ohLabel(e.oh)} 기운</div></div>
       <button class="btn-diary-del" onclick="deleteDiaryEntry('${e.date}')">×</button>
     </div>`;
   }).join('');
@@ -1261,12 +1268,12 @@ function determinePayer(){
   const reasonTpl=reasonPool[Math.floor(seededRand(seed2)*reasonPool.length)];
   const reason=reasonTpl
     .replace(/{name}/g,payer.displayName)
-    .replace(/{oh}/g,OH_NAME[payer.myOh]+'('+OH_CHAR[payer.myOh]+')')
+    .replace(/{oh}/g,ohLabelText(payer.myOh))
     .replace(/{today}/g,todayGanZhi);
   document.getElementById('payerReason').textContent=reason;
 
   // 순위표
-  document.getElementById('rankTodayInfo').textContent=`${todayStr} · 오늘 일진: ${todayGanZhi} (${OH_NAME[GAN_OH[tdp.g]]}일)`;
+  document.getElementById('rankTodayInfo').textContent=`${todayStr} · 오늘 일진: ${todayGanZhi} (${OH_NICK[GAN_OH[tdp.g]]} 기운)`;
   const rankList=document.getElementById('rankList');
   rankList.innerHTML='';
   results.forEach((r,i)=>{
@@ -1280,7 +1287,7 @@ function determinePayer(){
         <div class="rank-ohaeng-badge" style="background:${OH_COLOR[r.myOh]}22;border:1px solid ${OH_COLOR[r.myOh]}66">${OH_EMOJI[r.myOh]}</div>
         <div class="rank-info">
           <div class="rank-name">${r.displayName} ${isPayer?(payMode===0?'💸':'👑'):''}</div>
-          <div class="rank-desc">${r.yp.name}년 ${r.dp.name}일 · ${OH_NAME[r.myOh]}(${OH_CHAR[r.myOh]}) · ${REL_DESC[r.rel]||''}</div>
+          <div class="rank-desc">${r.yp.name}년 ${r.dp.name}일 · ${ohLabel(r.myOh)} · ${REL_DESC[r.rel]||''}</div>
         </div>
         <div class="rank-score-wrap">
           <div class="rank-score" style="color:${scoreColor}">${r.score}</div>
@@ -1485,9 +1492,9 @@ function updateCompat(){
   const p1El=document.getElementById('p1oh'),p2El=document.getElementById('p2oh');
   const lbl1=calType1===1?' (음력→양력)':'';
   const lbl2=calType2===1?' (음력→양력)':'';
-  p1El.textContent=`${OH_EMOJI[oh1]} ${OH_NAME[oh1]}(${OH_CHAR[oh1]}) · ${yp1.name}년${lbl1}`;
+  p1El.textContent=`${OH_EMOJI[oh1]} ${ohLabelText(oh1)} · ${yp1.name}년${lbl1}`;
   p1El.style.color=OH_COLOR[oh1];p1El.classList.add('show');
-  p2El.textContent=`${OH_EMOJI[oh2]} ${OH_NAME[oh2]}(${OH_CHAR[oh2]}) · ${yp2.name}년${lbl2}`;
+  p2El.textContent=`${OH_EMOJI[oh2]} ${ohLabelText(oh2)} · ${yp2.name}년${lbl2}`;
   p2El.style.color=OH_COLOR[oh2];p2El.classList.add('show');
   compatState={y1,m1,d1,y2,m2,d2,oh1,oh2,yp1,dp1,yp2,dp2};
 }
@@ -1518,8 +1525,8 @@ function generateCompat(){
   const fillC=s=>s
     .replace(/{p1}/g,`${yp1.name}년`)
     .replace(/{p2}/g,`${yp2.name}년`)
-    .replace(/{oh1}/g,`${OH_NAME[oh1]}(${OH_CHAR[oh1]})`)
-    .replace(/{oh2}/g,`${OH_NAME[oh2]}(${OH_CHAR[oh2]})`);
+    .replace(/{oh1}/g,ohLabelText(oh1))
+    .replace(/{oh2}/g,ohLabelText(oh2));
 
   // ★ 메뉴는 날짜(그날의 기운)에 따라 실제로 달라짐 ★
   // 후보: ①두 분 고유 궁합 메뉴 ②첫 번째 사람 기운 ③두 번째 사람 기운 ④그날의 일진 기운 — 씨드로 매일 다르게 선택
@@ -1534,11 +1541,11 @@ function generateCompat(){
     const focusOh=focusPick;
     baseMenu=pick(COMPAT_FOCUS_MENUS[focusOh],seed+43); // 궁합 전용 메뉴 풀에서 선택
     if(focusOh===todayOh){
-      focusReason=`${dayLabel1}은 ${OH_NAME[todayOh]}(${OH_CHAR[todayOh]}) 기운이 강한 날이라, 두 분의 사주보다 그날의 하늘 기운을 따라가는 게 좋아요.`;
+      focusReason=`${dayLabel1}은 ${ohLabelText(todayOh)} 기운이 강한 날이라, 두 분의 사주보다 그날의 하늘 기운을 따라가는 게 좋아요.`;
     }else if(focusOh===oh1){
-      focusReason=`${dayLabel1}은 ${yp1.name}년생의 ${OH_NAME[oh1]}(${OH_CHAR[oh1]}) 기운이 두 분의 만남을 이끄는 날이에요.`;
+      focusReason=`${dayLabel1}은 ${yp1.name}년생의 ${ohLabelText(oh1)} 기운이 두 분의 만남을 이끄는 날이에요.`;
     }else{
-      focusReason=`${dayLabel1}은 ${yp2.name}년생의 ${OH_NAME[oh2]}(${OH_CHAR[oh2]}) 기운이 두 분의 만남을 이끄는 날이에요.`;
+      focusReason=`${dayLabel1}은 ${yp2.name}년생의 ${ohLabelText(oh2)} 기운이 두 분의 만남을 이끄는 날이에요.`;
     }
   }
   const menuData=focusPick==='pair'
@@ -1563,15 +1570,15 @@ function generateCompat(){
 
   // 오늘(그날)의 기운 한 줄 코멘트
   let dayNote;
-  if(dayBonus>=8)dayNote=`✨ ${dayLabel1}은 ${OH_NAME[todayOh]}(${OH_CHAR[todayOh]}) 기운이 두 분 모두를 도와주는 날이에요. 만나기 좋은 타이밍!`;
-  else if(dayBonus<=-6)dayNote=`⚠️ ${dayLabel1}은 ${OH_NAME[todayOh]}(${OH_CHAR[todayOh]}) 기운이 다소 부담될 수 있는 날이에요. 무리한 약속보다는 가볍게 만나요.`;
-  else dayNote=`${dayLabel1}의 일진은 ${tdp.name}(${OH_NAME[todayOh]} 기운) — 두 분에게 큰 영향 없이 평온하게 흘러가는 날이에요.`;
+  if(dayBonus>=8)dayNote=`✨ ${dayLabel1}은 ${ohLabelText(todayOh)} 기운이 두 분 모두를 도와주는 날이에요. 만나기 좋은 타이밍!`;
+  else if(dayBonus<=-6)dayNote=`⚠️ ${dayLabel1}은 ${ohLabelText(todayOh)} 기운이 다소 부담될 수 있는 날이에요. 무리한 약속보다는 가볍게 만나요.`;
+  else dayNote=`${dayLabel1}의 일진은 ${tdp.name}(${OH_NICK[todayOh]} 기운) — 두 분에게 큰 영향 없이 평온하게 흘러가는 날이에요.`;
 
   // VS 배지
   document.getElementById('compatVs').innerHTML=`
-    <span class="compat-person-badge" style="background:${OH_COLOR[oh1]}22;border:1px solid ${OH_COLOR[oh1]}66;color:${OH_COLOR[oh1]}">${OH_EMOJI[oh1]} ${OH_NAME[oh1]} · ${yp1.name}년</span>
+    <span class="compat-person-badge" style="background:${OH_COLOR[oh1]}22;border:1px solid ${OH_COLOR[oh1]}66;color:${OH_COLOR[oh1]}">${OH_EMOJI[oh1]} ${OH_NICK[oh1]} · ${yp1.name}년</span>
     <span class="compat-vs-txt">💑</span>
-    <span class="compat-person-badge" style="background:${OH_COLOR[oh2]}22;border:1px solid ${OH_COLOR[oh2]}66;color:${OH_COLOR[oh2]}">${OH_EMOJI[oh2]} ${OH_NAME[oh2]} · ${yp2.name}년</span>
+    <span class="compat-person-badge" style="background:${OH_COLOR[oh2]}22;border:1px solid ${OH_COLOR[oh2]}66;color:${OH_COLOR[oh2]}">${OH_EMOJI[oh2]} ${OH_NICK[oh2]} · ${yp2.name}년</span>
   `;
 
   // 점수 색상
