@@ -227,6 +227,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .btn-invite{width:100%;padding:12px;margin-top:10px;border:1px solid var(--purple);border-radius:12px;background:var(--purpleg);color:var(--purple);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-invite:hover{background:#7A4E8C22}
 .btn-invite:active{transform:scale(.97)}
+/* 지역 메뉴 */
+.region-intro{font-size:11px;color:var(--txm);line-height:1.7;margin-bottom:14px}
+.region-more{margin-top:16px}
+.region-more-label{font-size:11px;font-weight:700;color:var(--txm);text-align:center;margin-bottom:10px}
+.region-more-item{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:11px 14px;margin-bottom:8px}
+.region-more-name{font-size:13px;font-weight:700;color:var(--tx)}
+.region-more-desc{font-size:10px;color:var(--txd);margin-top:2px;line-height:1.55}
 .btn-share{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-share:hover{border-color:var(--gold);color:var(--gold)}
 .btn-share.ok{border-color:var(--green);color:var(--green)}
@@ -236,8 +243,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .btn-img:hover{filter:brightness(1.08)}
 .btn-img:disabled{opacity:.5;cursor:wait}
 /* 탭 */
-.tab-nav{max-width:540px;margin:0 auto 16px;padding:0 16px;position:relative;z-index:1;display:flex;gap:8px}
-.tab-btn{flex:1;padding:10px 4px;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s var(--ease);text-align:center;white-space:nowrap;line-height:1.6}
+.tab-nav{max-width:560px;margin:0 auto 16px;padding:0 12px;position:relative;z-index:1;display:flex;gap:6px}
+.tab-btn{flex:1;padding:9px 2px;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s var(--ease);text-align:center;white-space:nowrap;line-height:1.6;letter-spacing:-.3px}
 .tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff;box-shadow:var(--sh-sm);transform:translateY(-1px)}
 .tab-section{display:none}
 .tab-section.active{display:block;animation:tabIn .3s var(--ease)}
@@ -324,10 +331,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </section>
 
 <div class="tab-nav">
-  <button class="tab-btn active" onclick="showTab(0)">🔮<br>개인 운세</button>
-  <button class="tab-btn" onclick="showTab(1)">💑<br>궁합 메뉴</button>
-  <button class="tab-btn" onclick="showTab(2)">💸<br>밥값 내기</button>
+  <button class="tab-btn active" onclick="showTab(0)">🔮<br>오늘 운세</button>
+  <button class="tab-btn" onclick="showTab(1)">💑<br>궁합</button>
+  <button class="tab-btn" onclick="showTab(2)">💸<br>밥값내기</button>
   <button class="tab-btn" onclick="showTab(3)">📔<br>다이어리</button>
+  <button class="tab-btn" onclick="showTab(4)">🗺️<br>지역 메뉴</button>
 </div>
 
 <div class="tab-section active" id="tab0">
@@ -594,6 +602,35 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
   </div>
 </div>
 </div><!-- /tab3 -->
+
+<!-- ── 탭5: 지역 메뉴 ── -->
+<div class="tab-section" id="tab4">
+<div class="main">
+  <div class="input-card">
+    <div class="slabel">🗺️ 지역별 특색 메뉴</div>
+    <p class="region-intro">유명 관광 메뉴 말고, 그 동네 사람들이 즐겨 먹는 <b>로컬 특색 메뉴</b>를 골라드려요. 날마다 오늘의 픽이 바뀌어요.</p>
+    <div class="birth-group" style="margin-bottom:14px">
+      <div class="blbl">지역 선택</div>
+      <select class="bsel" id="regionSel" onchange="renderRegion()"></select>
+    </div>
+    <div id="regionResult">
+      <div class="menu-card">
+        <div class="card-head"><div class="cicon mi-icon">🍽️</div><div><div class="ctag mcolor">오늘의 <span id="regionName"></span> 픽</div><div class="csub">이 동네 특색 메뉴</div></div></div>
+        <div class="menu-name-big" id="regionMenuName"></div>
+        <div class="menu-sub-txt" id="regionMenuDesc"></div>
+      </div>
+      <div class="menu-find-row" id="menuFindRow4" style="display:none">
+        <a class="btn-find" id="findMap4" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
+        <a class="btn-find" id="findSearch4" target="_blank" rel="noopener">🔍 맛집 검색</a>
+      </div>
+      <div class="region-more">
+        <div class="region-more-label">✦ <span id="regionName2"></span>의 다른 특색 메뉴 ✦</div>
+        <div id="regionMoreList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /tab4 -->
 
 <div class="disclaimer">🍚 <span>사주는 사주일 뿐, 재미로만 봐주세요 :)</span></div>
 
@@ -1918,6 +1955,168 @@ function shareInvite(){
     const t=document.getElementById('cy2');
     if(t)t.scrollIntoView({behavior:'smooth',block:'center'});
   },400);
+})();
+
+// ── 지역별 특색 메뉴 ──
+// 관광 대표 메뉴(천안 호두과자, 전주 비빔밥)가 아니라 현지 사람들이 즐겨 먹는 특색 메뉴 위주
+const REGION_MENUS=[
+  {r:'서울', menus:[
+    {m:'을지로 노가리골목', d:'퇴근길 골뱅이무침에 노가리 한 마리, 서울 직장인의 소울푸드'},
+    {m:'광장시장 빈대떡·마약김밥', d:'기름 두른 녹두 빈대떡과 겨자 찍어 먹는 꼬마김밥'},
+    {m:'신당동 즉석떡볶이', d:'라면사리·쫄면 넣고 보글보글 끓여 먹는 원조 즉떡'},
+    {m:'장충동 족발', d:'쫄깃한 앞다리살에 새우젓, 골목 전체가 족발집'}]},
+  {r:'인천', menus:[
+    {m:'화평동 세숫대야냉면', d:'양푼만 한 그릇에 나오는 시원한 물냉면'},
+    {m:'동인천 물텀벙(아귀찜)', d:'예전엔 버리던 생선이 지금은 매콤한 별미'},
+    {m:'신포시장 쫄면', d:'인천에서 처음 만들어졌다는 새콤달콤 쫄면'},
+    {m:'강화 젓국갈비', d:'새우젓으로 간을 한 맑은 갈비탕, 강화 향토음식'}]},
+  {r:'수원·경기남부', menus:[
+    {m:'수원 왕갈비', d:'양념 없이 소금으로만 굽는 큼직한 갈비'},
+    {m:'수원 통닭거리 옛날통닭', d:'가마솥에 튀긴 바삭한 통닭에 양념·염통'},
+    {m:'안양 옛날우동', d:'멸치육수에 유부 얹은 노포 우동'},
+    {m:'평택 부대찌개', d:'미군부대에서 시작된 진한 국물의 원조 스타일'}]},
+  {r:'춘천', menus:[
+    {m:'막국수', d:'메밀면에 동치미 국물, 닭갈비보다 현지인이 더 자주 먹음'},
+    {m:'감자옹심이', d:'강원도 감자를 갈아 빚은 쫄깃한 수제비'},
+    {m:'닭내장탕', d:'닭갈비집 옆 골목의 얼큰한 해장 메뉴'},
+    {m:'춘천 닭갈비 (철판·숯불)', d:'그래도 빼놓을 수 없는, 막장 양념의 철판 볶음'}]},
+  {r:'강릉', menus:[
+    {m:'장칼국수', d:'고추장 풀어 얼큰하게 끓인 강원도식 칼국수'},
+    {m:'감자옹심이', d:'맑은 멸치육수에 감자 반죽 옹심이가 동동'},
+    {m:'초당 짬뽕순두부', d:'초당두부에 얼큰한 짬뽕 국물을 더한 변주'},
+    {m:'꾹저구탕', d:'민물고기로 끓인 추어탕 비슷한 향토 매운탕'}]},
+  {r:'속초·양양', menus:[
+    {m:'오징어순대', d:'오징어 몸통에 소를 채워 쪄낸 뒤 부쳐 먹는'},
+    {m:'아바이순대·순대국', d:'실향민이 만든 함경도식 큰 순대'},
+    {m:'물회', d:'새콤한 육수에 회와 채소, 여름 뱃사람 음식'},
+    {m:'도루묵찌개', d:'알이 꽉 찬 도루묵을 조리듯 끓인 겨울 별미'}]},
+  {r:'천안·아산', menus:[
+    {m:'병천순대', d:'아우내장터의 얇은 막창 순대, 들깨 넣은 순대국'},
+    {m:'아산 게국지', d:'묵은지에 게를 넣어 끓인 서해안 향토 김치찌개'},
+    {m:'천안 콩국수', d:'되직한 콩물에 굵은 면, 여름 노포의 대표'},
+    {m:'입장 거봉포도 디저트', d:'포도 산지답게 나오는 제철 포도빙수'}]},
+  {r:'대전', menus:[
+    {m:'두부두루치기', d:'두부에 매콤 양념, 남은 국물에 국수 말아 먹는 대전 스타일'},
+    {m:'칼국수', d:'대전은 인구 대비 칼국수집이 가장 많은 도시'},
+    {m:'성심당 튀김소보로', d:'겉은 소보로 속은 팥, 대전 사람의 자부심'},
+    {m:'숯골원냉면', d:'꿩 육수로 내던 향토 냉면집'}]},
+  {r:'청주·충북', menus:[
+    {m:'청주 서문시장 삼겹살거리', d:'연탄불에 굽는 두툼한 삼겹살 골목'},
+    {m:'청주 매운탕(민물)', d:'대청호 근처 쏘가리·메기 매운탕'},
+    {m:'충주 꿩요리', d:'꿩만두·꿩샤부, 예로부터 이어진 향토식'},
+    {m:'괴산 올갱이(다슬기)국', d:'된장 풀어 끓인 시원한 다슬기 해장국'}]},
+  {r:'전주', menus:[
+    {m:'가맥 (가게맥주 + 황태·먹갈치)', d:'허름한 슈퍼에서 맥주에 연탄불 안주, 전주 밤문화'},
+    {m:'오모가리탕', d:'뚝배기(오모가리)에 민물새우·시래기 넣은 매운탕'},
+    {m:'콩나물국밥', d:'남부시장식 토렴 국밥에 수란, 해장의 정석'},
+    {m:'피순대', d:'속이 꽉 찬 전라도식 순대, 순대국도 진함'}]},
+  {r:'군산', menus:[
+    {m:'짬뽕', d:'옛 화교 도시답게 골목마다 불맛 짬뽕집'},
+    {m:'이성당 단팥빵·야채빵', d:'전국에서 줄 서는 오래된 빵집'},
+    {m:'박대구이', d:'서해안에서 나는 납작한 생선을 말려 구운'},
+    {m:'물메기탕', d:'겨울에 시원하게 끓여 먹는 물렁한 생선탕'}]},
+  {r:'광주', menus:[
+    {m:'상추튀김', d:'튀김을 상추에 싸서 양파간장에, 광주에서 시작된 조합'},
+    {m:'오리탕', d:'들깨 넉넉히 넣어 끓인 광주식 보양 오리탕'},
+    {m:'육전', d:'얇게 저민 소고기에 계란옷, 잔칫상 단골'},
+    {m:'무등산 보리밥', d:'열무·나물 잔뜩 넣고 고추장에 쓱쓱'}]},
+  {r:'여수', menus:[
+    {m:'서대회무침', d:'꼬들한 서대살에 막걸리식초 양념, 밥에 비벼 먹는'},
+    {m:'갓김치', d:'알싸한 돌산 갓으로 담근, 밥도둑 중 밥도둑'},
+    {m:'하모(갯장어) 샤부샤부', d:'뼈 발라낸 갯장어를 끓는 육수에 살짝'},
+    {m:'게장백반', d:'양념게장·간장게장이 한 상 가득'}]},
+  {r:'순천·보성', menus:[
+    {m:'짱뚱어탕', d:'갯벌에서 잡은 짱뚱어를 갈아 추어탕처럼'},
+    {m:'웃장 국밥', d:'순천 웃장의 돼지국밥·수육 골목'},
+    {m:'보성 꼬막정식', d:'벌교 참꼬막을 삶고 무치고 전 부친 한 상'},
+    {m:'재첩국', d:'섬진강 재첩을 맑게 끓인 시원한 해장국'}]},
+  {r:'목포', menus:[
+    {m:'세발낙지 연포탕·기절낙지', d:'가느다란 세발낙지를 통째로'},
+    {m:'병어찜·민어회', d:'여름엔 민어, 사철 병어, 목포 잔치 생선'},
+    {m:'꽃게살 비빔밥', d:'양념한 꽃게살을 밥에 슥슥 비벼'},
+    {m:'홍어삼합', d:'삭힌 홍어에 묵은지·돼지수육, 막걸리 필수'}]},
+  {r:'대구', menus:[
+    {m:'뭉티기', d:'생소고기를 큼직하게 썰어 참기름장에, 신선해야 가능'},
+    {m:'납작만두', d:'얇게 눌러 구운 만두에 간장·고춧가루'},
+    {m:'무침회', d:'오징어·소라에 채소와 초고추장, 국수사리 추가'},
+    {m:'막창구이', d:'된장소스에 찍어 먹는 소 막창, 대구가 원조'}]},
+  {r:'부산', menus:[
+    {m:'밀면', d:'피란 시절 냉면 대신 밀가루로, 부산의 여름'},
+    {m:'돼지국밥', d:'뽀얀 국물에 부추·정구지, 새우젓으로 간'},
+    {m:'완당', d:'아주 얇은 만두피의 물만두 같은 국물요리'},
+    {m:'씨앗호떡', d:'설탕 녹은 호떡 속에 해바라기씨·견과'}]},
+  {r:'울산', menus:[
+    {m:'언양불고기', d:'다진 고기를 석쇠에 얇게 펴 구운, 언양의 명물'},
+    {m:'고래고기 수육', d:'장생포 일대에서 이어지는 특수 향토식'},
+    {m:'물회 (제철 생선)', d:'방어·전어 등 그날 생선으로 시원하게'},
+    {m:'복국', d:'맑게 끓인 복어탕, 술꾼의 아침'}]},
+  {r:'포항·경주', menus:[
+    {m:'과메기', d:'꽁치를 얼렸다 녹였다 말린 겨울 별미, 쌈 필수'},
+    {m:'모리국수', d:'죽도시장에서 잡어·콩나물 넣고 얼큰하게'},
+    {m:'물회', d:'포항식은 고추장 육수에 밥이나 국수 말아'},
+    {m:'경주 쌈밥·찰보리빵', d:'나물 한 상 쌈밥, 후식은 찰보리빵'}]},
+  {r:'통영·거제', menus:[
+    {m:'충무김밥', d:'맨김밥에 매운 무김치·오징어무침 따로'},
+    {m:'우짜', d:'우동에 짜장을 얹은 통영만의 분식'},
+    {m:'빼떼기죽', d:'말린 고구마를 팥·콩과 오래 끓인 죽'},
+    {m:'도다리쑥국', d:'봄 도다리에 햇쑥, 통영의 봄 알림'}]},
+  {r:'진주', menus:[
+    {m:'진주냉면', d:'소고기 육전을 고명으로 얹는 화려한 냉면'},
+    {m:'진주비빔밥(육회비빔밥)', d:'선지국 곁들여 나오는 꽃처럼 담은 비빔밥'},
+    {m:'헛제사밥', d:'제사 지내지 않고 먹는 나물 비빔밥과 탕국'},
+    {m:'실비집 안주', d:'기본안주가 계속 나오는 진주식 술문화'}]},
+  {r:'창원·마산', menus:[
+    {m:'마산 아구찜', d:'물아귀 말린 것에 콩나물, 아구찜의 원조 도시'},
+    {m:'미더덕찜', d:'톡 터지는 미더덕 향 가득한 찜'},
+    {m:'통술', d:'한 상 가득 해산물 안주가 통째로 나오는 술상'},
+    {m:'진동 미주구리(물가자미)회', d:'뼈째 썰어 초장에, 봄 별미'}]},
+  {r:'안동', menus:[
+    {m:'헛제사밥', d:'유교 고장답게 제사 음식을 상시 메뉴로'},
+    {m:'안동 간고등어', d:'내륙까지 오느라 소금 절인 고등어가 명물이 됨'},
+    {m:'안동국시', d:'콩가루 섞은 면을 은은한 육수에'},
+    {m:'버버리찰떡', d:'콩고물 굴린 말랑한 찰떡, 안동 간식'}]},
+  {r:'제주', menus:[
+    {m:'고기국수', d:'돼지뼈 육수에 굵은 면과 수육, 잔칫날 국수'},
+    {m:'몸국', d:'돼지 삶은 국물에 모자반(몸)을 넣어 걸쭉하게'},
+    {m:'갈치국', d:'싱싱한 갈치를 호박·배추와 맑게, 육지엔 없는'},
+    {m:'빙떡', d:'메밀전에 무나물을 돌돌 만 심심한 간식'}]},
+];
+
+function renderRegion(){
+  const sel=document.getElementById('regionSel');
+  const idx=parseInt(sel.value);
+  const reg=REGION_MENUS[idx];
+  if(!reg)return;
+  try{localStorage.setItem('sajuRegion',String(idx))}catch(e){}
+  // 날짜 기반 시드로 오늘의 픽 결정 (하루 동안은 고정, 지역마다 다름)
+  const t=new Date();
+  const daySeed=(t.getFullYear()*372)+((t.getMonth()+1)*31)+t.getDate()+idx*13;
+  const pi=Math.floor(seededRand(daySeed)*reg.menus.length);
+  const pick=reg.menus[pi];
+  document.getElementById('regionName').textContent=reg.r;
+  document.getElementById('regionName2').textContent=reg.r;
+  document.getElementById('regionMenuName').textContent=pick.m;
+  document.getElementById('regionMenuDesc').textContent=pick.d;
+  // 지도·검색 링크는 괄호·중점 뺀 대표 키워드로
+  const kw=pick.m.replace(/\(.*?\)/g,'').split(/[·+]/)[0].trim();
+  setMenuFindLinks('menuFindRow4','findMap4','findSearch4',reg.r.split(/[·]/)[0]+' '+kw);
+  const others=reg.menus.filter((_,i)=>i!==pi);
+  document.getElementById('regionMoreList').innerHTML=others.map(x=>
+    `<div class="region-more-item"><div class="region-more-name">${x.m}</div><div class="region-more-desc">${x.d}</div></div>`).join('');
+}
+
+// 지역 선택 드롭다운 채우기 + 지난번 선택 기억
+(function initRegion(){
+  const sel=document.getElementById('regionSel');
+  if(!sel)return;
+  REGION_MENUS.forEach((reg,i)=>{
+    const o=document.createElement('option');o.value=i;o.textContent=reg.r;sel.appendChild(o);
+  });
+  let saved=0;
+  try{saved=parseInt(localStorage.getItem('sajuRegion')||'0');}catch(e){}
+  if(!(saved>=0&&saved<REGION_MENUS.length))saved=0;
+  sel.value=saved;
+  renderRegion();
 })();
 </script>
 
