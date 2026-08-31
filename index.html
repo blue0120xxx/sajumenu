@@ -191,6 +191,37 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 /* 화면 하단에 잠깐 떴다 사라지는 알림 */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--tx);color:#fff;padding:12px 20px;border-radius:24px;font-size:12px;font-weight:700;box-shadow:var(--sh-md);opacity:0;transition:all .4s var(--ease);z-index:9999;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* 끼니별 메뉴 카드 */
+.meals-icon{background:#EAF3EE;color:var(--green)}
+.meals-color{color:var(--green)}
+.meal-row{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.meal-item{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 12px}
+.meal-item.primary{border-color:var(--gold2);background:#FCF6E8}
+.meal-when{flex-shrink:0;width:44px;text-align:center;font-size:11px;font-weight:700;color:var(--txm)}
+.meal-when .meal-emoji{font-size:16px;display:block;margin-bottom:1px}
+.meal-body{flex:1;min-width:0}
+.meal-name{font-size:13px;font-weight:700;color:var(--tx)}
+.meal-desc{font-size:10px;color:var(--txd);margin-top:1px;line-height:1.4}
+.meal-badge{flex-shrink:0;font-size:9px;font-weight:700;color:var(--gold);background:#FBF0DA;border:1px solid var(--golddim);border-radius:10px;padding:2px 6px}
+/* 메뉴 찾기 링크 버튼 */
+.menu-find-row{display:flex;gap:8px;margin:14px 0 2px}
+.btn-find{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s}
+.btn-find:hover{border-color:var(--gold);color:var(--gold)}
+.btn-find:active{transform:scale(.96)}
+/* 메뉴 도감 */
+.diary-subtab{display:flex;gap:6px;margin-bottom:14px}
+.diary-subtab-btn{flex:1;padding:9px;border:1px solid var(--b1);border-radius:10px;background:var(--s2);color:var(--txm);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.diary-subtab-btn.active{background:var(--gold);border-color:var(--gold);color:#fff}
+.dex-progress{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;margin-bottom:16px;text-align:center}
+.dex-progress-num{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:900;color:var(--gold)}
+.dex-progress-bar{height:8px;background:var(--b1);border-radius:6px;margin-top:10px;overflow:hidden}
+.dex-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:6px;transition:width .6s var(--ease)}
+.dex-el-group{margin-bottom:16px}
+.dex-el-title{font-size:11px;font-weight:700;color:var(--txm);margin-bottom:8px}
+.dex-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.dex-item{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 6px;text-align:center;font-size:10px;font-weight:700;color:var(--tx);line-height:1.3;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.dex-item.locked{color:var(--txm);opacity:.5}
+.dex-item .dex-emoji{font-size:16px}
 .btn-share{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-share:hover{border-color:var(--gold);color:var(--gold)}
 .btn-share.ok{border-color:var(--green);color:var(--green)}
@@ -352,6 +383,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <div class="menu-sub-txt" id="menuSub"></div>
       <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
     </div>
+    <!-- 끼니별 메뉴 -->
+    <div class="menu-card">
+      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">오늘 하루 이렇게 먹어보세요</div></div></div>
+      <div class="meal-row" id="mealRow"></div>
+    </div>
     <!-- 금기 메뉴 -->
     <div class="taboo-card">
       <div class="card-head"><div class="cicon taboo-icon">🙅</div><div><div class="ctag tcolor">오늘의 금기 메뉴</div><div class="csub">이건 오늘만큼은 피해보세요</div></div></div>
@@ -376,6 +412,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     </div>
     </div>
     <div class="streak-chip" id="streakChip0" style="display:none"></div>
+    <div class="menu-find-row" id="menuFindRow0" style="display:none">
+      <a class="btn-find" id="findMap0" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
+      <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 맛집 검색</a>
+    </div>
     <div class="share-row">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoText0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
@@ -453,6 +493,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <!-- 함께하는 팁 -->
     <div class="today-word"><div class="tw-label">✦ 오늘 두 사람에게 ✦</div><div class="tw-text" id="compatTip"></div></div>
     </div>
+    <div class="menu-find-row" id="menuFindRow1" style="display:none">
+      <a class="btn-find" id="findMap1" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
+      <a class="btn-find" id="findSearch1" target="_blank" rel="noopener">🔍 맛집 검색</a>
+    </div>
     <div class="share-row">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoTextC)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn2" onclick="copyCompat()">📋 텍스트 복사</button>
@@ -527,9 +571,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
   <div class="input-card">
     <div class="slabel">📔 나의 사주 메뉴 기록</div>
     <div class="streak-banner" id="streakBanner" style="display:none"></div>
-    <div class="diary-stat-row" id="diaryStats"></div>
-    <div id="diaryList"></div>
-    <button class="btn-diary-clear" id="diaryClearBtn" onclick="clearDiary()" style="display:none">전체 기록 삭제</button>
+    <div class="diary-subtab">
+      <button class="diary-subtab-btn active" id="dsub0" onclick="setDiaryView(0)">📔 기록</button>
+      <button class="diary-subtab-btn" id="dsub1" onclick="setDiaryView(1)">🍱 메뉴 도감</button>
+    </div>
+    <div id="diaryViewRecord">
+      <div class="diary-stat-row" id="diaryStats"></div>
+      <div id="diaryList"></div>
+      <button class="btn-diary-clear" id="diaryClearBtn" onclick="clearDiary()" style="display:none">전체 기록 삭제</button>
+    </div>
+    <div id="diaryViewDex" style="display:none">
+      <div class="dex-progress" id="dexProgress"></div>
+      <div id="dexGrid"></div>
+    </div>
   </div>
 </div>
 </div><!-- /tab3 -->
@@ -863,6 +917,8 @@ renderStreakBanner();
 if(_streakToday.milestone){
   setTimeout(()=>showToast(`🎉 ${_streakToday.milestone}일 연속 방문 달성! 대단해요`,4500),800);
 }
+// 예전 다이어리 기록에 있던 메뉴도 도감에 반영
+collectMenus(loadDiary().map(e=>e.menu));
 
 let state=null,moodIdx=0;
 document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{document.querySelectorAll('.mood-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');moodIdx=parseInt(c.dataset.v)})});
@@ -1032,6 +1088,20 @@ function generate(){
   document.getElementById('reasonText').textContent=fill(menuData.r);
   document.getElementById('todayWord').textContent='"'+fill(todayWord)+'"';
 
+  // ── 끼니별 메뉴: 기분 그룹의 3가지를 아침/점심/저녁으로 나눠서 보여준다 (메인 추천 = 점심) ──
+  const mealOthers=menuGroup.filter(x=>x.m!==menuData.m);
+  const meals=[
+    {when:'아침',emoji:'🌅',data:mealOthers[0]||menuData},
+    {when:'점심',emoji:'☀️',data:menuData,primary:true},
+    {when:'저녁',emoji:'🌙',data:mealOthers[1]||mealOthers[0]||menuData},
+  ];
+  document.getElementById('mealRow').innerHTML=meals.map(x=>
+    `<div class="meal-item${x.primary?' primary':''}">`+
+    `<div class="meal-when"><span class="meal-emoji">${x.emoji}</span>${x.when}</div>`+
+    `<div class="meal-body"><div class="meal-name">${x.data.m}</div><div class="meal-desc">${x.data.s}</div></div>`+
+    (x.primary?'<div class="meal-badge">추천</div>':'')+
+    `</div>`).join('');
+
   // 금기 메뉴: 나를 극하는 오행의 음식
   const tabooOh=CTRL.findIndex(v=>v===myOh);
   const tabooData=pick(TABOO_FOODS[tabooOh],seed+21);
@@ -1048,7 +1118,7 @@ function generate(){
   staggerReveal('#shareCard0 > *');
   document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
 
-  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n⚠️ 오늘의 금기 메뉴: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
+  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n🕰️ 끼니별 — 아침 ${meals[0].data.m} / 점심 ${meals[1].data.m} / 저녁 ${meals[2].data.m}\n\n⚠️ 오늘의 금기 메뉴: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
   window._kakaoText0=`🔮 오늘 나는 ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운! 사주로 알아본 오늘의 메뉴는 "${menuData.m}" 🍽️ 너의 메뉴는 뭘까?`;
 
   // 다이어리에 자동 저장
@@ -1056,6 +1126,13 @@ function generate(){
 
   // 결과 화면 아래에 연속 방문 안내 칩 표시
   renderStreakChip('streakChip0');
+
+  // 메뉴 찾기 링크(지도·검색) 연결
+  setMenuFindLinks('menuFindRow0','findMap0','findSearch0',menuData.m);
+
+  // 오늘 나온 메뉴들을 도감에 추가
+  const dexAdded=collectMenus([menuData.m].concat(meals.map(x=>x.data.m)));
+  if(dexAdded>0)showToast(`🍱 도감에 새 메뉴 ${dexAdded}개 추가! 다이어리 탭에서 확인하세요`);
 }
 
 // ── 사주 다이어리 (localStorage 기록) ──
@@ -1183,6 +1260,71 @@ function showToast(msg,ms){
   requestAnimationFrame(()=>el.classList.add('show'));
   clearTimeout(el._t);
   el._t=setTimeout(()=>el.classList.remove('show'),ms||3500);
+}
+
+// ── 메뉴 찾기 링크 (지도 / 검색) ──
+// 메뉴 이름으로 카카오맵 검색과 네이버 맛집 검색 주소를 만들어 버튼에 연결한다
+function setMenuFindLinks(rowId,mapId,searchId,menuName){
+  const row=document.getElementById(rowId);
+  if(!row||!menuName)return;
+  document.getElementById(mapId).href='https://map.kakao.com/link/search/'+encodeURIComponent(menuName);
+  document.getElementById(searchId).href='https://search.naver.com/search.naver?query='+encodeURIComponent(menuName+' 맛집');
+  row.style.display='flex';
+}
+
+// ── 메뉴 도감 (localStorage) ──
+// 화면에 나온 적 있는 메뉴를 모아서 "몇 개나 만났는지" 보여준다
+// MENU_DEX[오행] = 그 오행의 전체 메뉴 이름 목록
+const MENU_DEX=(function(){
+  const seen={},byEl=[[],[],[],[],[]];
+  for(let el=0;el<5;el++){
+    for(let mood=0;mood<6;mood++){
+      (OH_MENUS[el][mood]||[]).forEach(x=>{
+        if(!seen[x.m]){seen[x.m]=true;byEl[el].push(x.m);}
+      });
+    }
+  }
+  return byEl;
+})();
+const MENU_DEX_TOTAL=MENU_DEX.reduce((s,a)=>s+a.length,0);
+
+function loadDex(){
+  try{return JSON.parse(localStorage.getItem('sajuDex')||'[]')}catch(e){return []}
+}
+// 메뉴 이름들을 도감에 추가. 새로 추가된 개수를 돌려준다.
+function collectMenus(names){
+  let dex=loadDex(),added=0;
+  names.forEach(n=>{if(n&&dex.indexOf(n)<0){dex.push(n);added++;}});
+  if(added){try{localStorage.setItem('sajuDex',JSON.stringify(dex))}catch(e){}}
+  return added;
+}
+
+function renderDex(){
+  const dex=loadDex();
+  const got=MENU_DEX.reduce((s,arr)=>s+arr.filter(n=>dex.indexOf(n)>=0).length,0);
+  const pct=MENU_DEX_TOTAL?Math.round(got/MENU_DEX_TOTAL*100):0;
+  document.getElementById('dexProgress').innerHTML=
+    `<div class="dex-progress-num">${got} <span style="font-size:13px;color:var(--txd)">/ ${MENU_DEX_TOTAL}</span></div>`+
+    `<div class="streak-sub">지금까지 만난 메뉴 · ${pct}%</div>`+
+    `<div class="dex-progress-bar"><div class="dex-progress-fill" style="width:${pct}%"></div></div>`;
+  document.getElementById('dexGrid').innerHTML=MENU_DEX.map((arr,el)=>{
+    const owned=arr.filter(n=>dex.indexOf(n)>=0).length;
+    const items=arr.map(n=>dex.indexOf(n)>=0
+      ? `<div class="dex-item"><span class="dex-emoji">${OH_EMOJI[el]}</span>${n}</div>`
+      : `<div class="dex-item locked"><span class="dex-emoji">❓</span>???</div>`).join('');
+    return `<div class="dex-el-group"><div class="dex-el-title">${OH_EMOJI[el]} ${OH_NICK[el]} 기운 메뉴 (${owned}/${arr.length})</div><div class="dex-items">${items}</div></div>`;
+  }).join('');
+}
+
+// 다이어리 탭 안에서 기록 / 도감 화면 전환
+let diaryView=0;
+function setDiaryView(v){
+  diaryView=v;
+  document.getElementById('dsub0').classList.toggle('active',v===0);
+  document.getElementById('dsub1').classList.toggle('active',v===1);
+  document.getElementById('diaryViewRecord').style.display=v===0?'block':'none';
+  document.getElementById('diaryViewDex').style.display=v===1?'block':'none';
+  if(v===1)renderDex();
 }
 
 // ── 탭 전환 ──
@@ -1476,7 +1618,7 @@ async function downloadCard(elId,btnId,filenamePrefix){
 function showTab(i){
   document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',i===j));
   document.querySelectorAll('.tab-section').forEach((s,j)=>s.classList.toggle('active',i===j));
-  if(i===3)renderDiary();
+  if(i===3){renderDiary();if(diaryView===1)renderDex();}
 }
 
 // ── 궁합 셀렉트 채우기 ──
@@ -1683,6 +1825,10 @@ function generateCompat(){
 
   window._compatShareText=`💑 ${todayStr} 오행 궁합 메뉴\n\n${OH_EMOJI[oh1]} ${OH_NAME[oh1]} ${yp1.name}년 + ${OH_EMOJI[oh2]} ${OH_NAME[oh2]} ${yp2.name}년\n\n${ctd.label} ${score}점\n${ctd.desc}\n${dayNote}\n\n🍽️ 함께 먹기 좋은 메뉴: ${menuData.m}\n${reasonFinal}\n\n"${tipFinal}"\n\n#오행궁합 #사주메뉴 #오늘뭐먹지`;
   window._kakaoTextC=`💑 우리 궁합 ${score}점! (${ctd.label}) 오늘 함께 먹기 좋은 메뉴는 "${menuData.m}" — 우리 궁합 메뉴도 보러가기`;
+
+  // 메뉴 찾기 링크(지도·검색) 연결 + 도감에 추가
+  setMenuFindLinks('menuFindRow1','findMap1','findSearch1',menuData.m);
+  collectMenus([menuData.m]);
 }
 
 function copyCompat(){
