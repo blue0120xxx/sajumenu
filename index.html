@@ -1288,11 +1288,31 @@ async function downloadCard(elId,btnId,filenamePrefix){
     const canvas=await html2canvas(wrap,{backgroundColor:'#FAF3E3',scale:2,useCORS:true});
     document.body.removeChild(wrap);
 
-    const link=document.createElement('a');
     const dateStr=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-    link.download=`${filenamePrefix}_${dateStr}.png`;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
+    const fileName=`${filenamePrefix}_${dateStr}.png`;
+
+    // 모바일에서 공유 시트를 지원하면 "사진에 저장"으로 바로 갤러리에 저장할 수 있게 우선 시도
+    let shared=false;
+    if(navigator.share&&navigator.canShare){
+      const blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
+      const file=new File([blob],fileName,{type:'image/png'});
+      if(navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file],title:fileName});
+          shared=true;
+        }catch(shareErr){
+          if(shareErr&&shareErr.name==='AbortError')shared=true; // 사용자가 공유를 취소한 경우, 추가 동작 없이 종료
+        }
+      }
+    }
+
+    // 공유 시트를 못 쓰거나 지원하지 않는 환경은 기존 방식(파일 다운로드)으로 대체
+    if(!shared){
+      const link=document.createElement('a');
+      link.download=fileName;
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+    }
   }catch(e){
     alert('이미지 생성 중 오류가 발생했어요: '+e.message);
   }
