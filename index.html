@@ -222,6 +222,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .dex-item{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 6px;text-align:center;font-size:10px;font-weight:700;color:var(--tx);line-height:1.3;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .dex-item.locked{color:var(--txm);opacity:.5}
 .dex-item .dex-emoji{font-size:16px}
+/* 궁합 초대 링크 */
+.invite-banner{background:linear-gradient(135deg,#F3E9F6,#ECDEF2);border:1px solid #C9A9D4;border-radius:12px;padding:13px 15px;margin-bottom:14px;font-size:12px;color:var(--purple);font-weight:500;line-height:1.6;text-align:center}
+.btn-invite{width:100%;padding:12px;margin-top:10px;border:1px solid var(--purple);border-radius:12px;background:var(--purpleg);color:var(--purple);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-invite:hover{background:#7A4E8C22}
+.btn-invite:active{transform:scale(.97)}
 .btn-share{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-share:hover{border-color:var(--gold);color:var(--gold)}
 .btn-share.ok{border-color:var(--green);color:var(--green)}
@@ -432,6 +437,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="tab-section" id="tab1">
 <div class="main">
   <div class="input-card">
+    <div class="invite-banner" id="inviteBanner" style="display:none">💌 상대가 보낸 생년월일이 <b>첫 번째 사람</b>에 채워졌어요.<br>두 번째 사람 생일만 고르면 궁합 메뉴가 나와요!</div>
     <div class="slabel">💑 두 사람의 생년월일을 입력하세요</div>
     <!-- Person 1 -->
     <div class="compat-inputs">
@@ -469,6 +475,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     </div>
 
     <button class="btn-go" onclick="generateCompat()">💑 궁합 메뉴 보기</button>
+    <button class="btn-invite" id="btnInvite" onclick="shareInvite()">💌 상대에게 링크 보내기 (내 생일만 넣어서)</button>
   </div>
 
   <!-- 궁합 결과 -->
@@ -1868,6 +1875,50 @@ function shareKakao(text){
     link:{mobileWebUrl:'https://sajumenu.com/',webUrl:'https://sajumenu.com/'}
   });
 }
+
+// ── 궁합 초대 링크 ──
+// 첫 번째 사람 생일을 링크에 담아 상대에게 보낸다. 상대가 링크를 열면 자동으로 채워진다.
+function buildInviteURL(){
+  const y=document.getElementById('cy1').value;
+  const m=document.getElementById('cm1').value;
+  const d=document.getElementById('cd1').value;
+  const l=(calType1===1)?1:0;
+  return `${location.origin}${location.pathname}?invite=${y}.${m}.${d}.${l}`;
+}
+function shareInvite(){
+  const url=buildInviteURL();
+  const msg=`💑 우리 궁합 메뉴 볼래? 내 생일은 넣어놨으니 너 생일만 고르면 돼!\n${url}`;
+  if(navigator.share){
+    navigator.share({title:'사주메뉴 궁합',text:'우리 궁합 메뉴 볼래? 내 생일은 넣어놨어!',url}).catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(msg).then(
+      ()=>showToast('💌 초대 링크를 복사했어요! 상대에게 붙여넣어 보내세요'),
+      ()=>prompt('아래 초대 링크를 복사해서 보내세요',url)
+    );
+  }else{
+    prompt('아래 초대 링크를 복사해서 보내세요',url);
+  }
+}
+// 초대 링크로 들어온 경우 첫 번째 사람 정보를 자동으로 채우고 궁합 탭을 연다
+(function handleInvite(){
+  const raw=new URLSearchParams(location.search).get('invite');
+  if(!raw)return;
+  const [y,m,d,l]=raw.split('.').map(Number);
+  if(!y||!m||!d)return;
+  showTab(1);
+  if(l===1)setCal1(1);
+  ['cy1','cm1','cd1'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el)el.value=[y,m,d][i];
+  });
+  updateCompat();
+  const b=document.getElementById('inviteBanner');
+  if(b)b.style.display='block';
+  setTimeout(()=>{
+    const t=document.getElementById('cy2');
+    if(t)t.scrollIntoView({behavior:'smooth',block:'center'});
+  },400);
+})();
 </script>
 
 <!-- 방문자수 집계 (GoatCounter) -->
