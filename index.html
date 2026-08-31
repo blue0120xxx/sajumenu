@@ -777,6 +777,15 @@ monthSel.value=6;
 for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';daySel.appendChild(o)}
 daySel.value=15;
 
+// 지난번에 입력한 생년월일을 기억해서 자동으로 채워준다
+const savedBirth=loadBirth();
+if(savedBirth&&savedBirth.y&&savedBirth.m&&savedBirth.d){
+  yearSel.value=savedBirth.y;
+  monthSel.value=savedBirth.m;
+  daySel.value=savedBirth.d;
+  setCalType(savedBirth.cal===1?1:0);
+}
+
 let state=null,moodIdx=0;
 document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{document.querySelectorAll('.mood-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');moodIdx=parseInt(c.dataset.v)})});
 
@@ -819,9 +828,17 @@ function getTargetDate2(){
   return new Date(y,m-1,d);
 }
 
+function saveBirth(y,m,d,cal){
+  try{localStorage.setItem('sajuBirth',JSON.stringify({y,m,d,cal}))}catch(e){}
+}
+function loadBirth(){
+  try{return JSON.parse(localStorage.getItem('sajuBirth')||'null')}catch(e){return null}
+}
+
 function updateInfo(){
   const yi=parseInt(yearSel.value),mi=parseInt(monthSel.value),di=parseInt(daySel.value);
   if(!yi||!mi||!di)return;
+  saveBirth(yi,mi,di,calType);
   const{y,m,d}=toSolar(yi,mi,di,calType===1);
 
   const td=getTargetDate0();
