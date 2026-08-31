@@ -108,6 +108,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .relation-emoji{font-size:20px}
 .relation-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:700;margin:2px 0}
 .relation-desc{font-size:11px;opacity:.8}
+/* 오행 성격 분석 */
+.persona-card{background:linear-gradient(160deg,#FBF8FE,#F1E7F7);border:1px solid #C9A8D9;border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:var(--sh-md)}
+.persona-icon{background:linear-gradient(135deg,var(--purple),var(--gold))}
+.persona-color{color:var(--purple)}
+.persona-traits{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 14px}
+.persona-tag{background:#ffffffa8;border:1px solid #C9A8D9;color:var(--purple);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px}
+.persona-block{margin-bottom:12px}
+.persona-block:last-child{margin-bottom:0}
+.persona-label{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--purple);text-transform:uppercase;margin-bottom:6px;opacity:.9}
+.persona-text{font-family:'Noto Serif KR',serif;font-size:13px;line-height:1.95;color:#3D2E4A;word-break:keep-all}
 /* 운세 카드 */
 .fortune-card{background:linear-gradient(160deg,#FFFDF7,#FBF0DA);border:1px solid var(--golddim);border-radius:16px;padding:22px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:var(--sh-md)}
 .fortune-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse,var(--purpleg) 0%,transparent 60%);pointer-events:none}
@@ -324,26 +334,34 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <div class="saju-pillars" id="rPillars"></div>
       <div class="relation-result" id="rRelation"></div>
     </div>
+    <!-- 메뉴 (사이트의 메인 기능) -->
+    <div class="menu-card">
+      <div class="card-head"><div class="cicon mi-icon">🍽️</div><div><div class="ctag mcolor">오늘의 추천 메뉴</div></div></div>
+      <div class="menu-name-big" id="menuName"></div>
+      <div class="menu-sub-txt" id="menuSub"></div>
+      <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
+    </div>
+    <!-- 금기 음식 -->
+    <div class="taboo-card">
+      <div class="card-head"><div class="cicon taboo-icon">🙅</div><div><div class="ctag tcolor">오늘의 금기 음식</div><div class="csub">이건 오늘만큼은 피해보세요</div></div></div>
+      <div class="taboo-food" id="tabooFood"></div>
+      <div class="taboo-reason" id="tabooReason"></div>
+    </div>
+    <!-- 한마디 -->
+    <div class="today-word"><div class="tw-label">✦ 오늘의 한마디 ✦</div><div class="tw-text" id="todayWord"></div></div>
     <!-- 운세 -->
     <div class="fortune-card">
       <div class="card-head"><div class="cicon fi-icon">🔮</div><div><div class="ctag fcolor">오늘의 사주 운세</div><div class="csub" id="rSub"></div></div></div>
       <div class="fortune-text" id="fortuneText"></div>
       <div class="score-row" id="scoreRow"></div>
     </div>
-    <!-- 메뉴 -->
-    <div class="menu-card">
-      <div class="card-head"><div class="cicon mi-icon">🍽️</div><div><div class="ctag mcolor">오늘의 오행 메뉴</div></div></div>
-      <div class="menu-name-big" id="menuName"></div>
-      <div class="menu-sub-txt" id="menuSub"></div>
-      <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
-    </div>
-    <!-- 한마디 -->
-    <div class="today-word"><div class="tw-label">✦ 오늘의 한마디 ✦</div><div class="tw-text" id="todayWord"></div></div>
-    <!-- 금기 음식 -->
-    <div class="taboo-card">
-      <div class="card-head"><div class="cicon taboo-icon">🙅</div><div><div class="ctag tcolor">오늘의 금기 음식</div><div class="csub">이건 오늘만큼은 피해보세요</div></div></div>
-      <div class="taboo-food" id="tabooFood"></div>
-      <div class="taboo-reason" id="tabooReason"></div>
+    <!-- 오행 성격 분석 -->
+    <div class="persona-card">
+      <div class="card-head"><div class="cicon persona-icon">☯</div><div><div class="ctag persona-color">나의 오행 성격</div><div class="csub" id="personaSub"></div></div></div>
+      <div class="persona-traits" id="personaTraits"></div>
+      <div class="persona-block"><div class="persona-label">✦ 강점</div><div class="persona-text" id="personaStrength"></div></div>
+      <div class="persona-block"><div class="persona-label">✦ 주의할 점</div><div class="persona-text" id="personaCaution"></div></div>
+      <div class="persona-block"><div class="persona-label">✦ 상성</div><div class="persona-text" id="personaCompat"></div></div>
     </div>
     </div>
     <div class="share-row">
@@ -573,6 +591,40 @@ const OH_COLOR=['#3C7A5B','#B8412E','#B07A22','#5B6B7A','#2F5C8A'];
 const OH_TASTE=['신맛','쓴맛','단맛','매운맛','짠맛'];
 const OH_KEY  =['성장·창조','열정·표현','안정·중재','결단·정의','지혜·유연'];
 
+// 오행별 성격 분석 (년주+일주로 정해지는 '나의 오행' 기준 — 매일 바뀌지 않는 고정 콘텐츠)
+const OH_PERSONA=[
+  { // 목(木)
+    title:'성장하는 나무형',
+    traits:['창의적','성장지향','추진력','호기심','이상주의'],
+    strength:'새로운 아이디어를 떠올리고 일단 저질러보는 추진력이 있어요. 배우고 싶은 게 생기면 망설임 없이 뛰어들고, 힘든 시기에도 나무처럼 위로 뻗어나가는 회복력을 가졌습니다.',
+    caution:'다만 벌여놓은 일이 많아질수록 마무리가 흐지부지될 수 있어요. 새로운 걸 하나 시작하기 전에, 지금 하고 있는 걸 먼저 끝내는 연습이 필요합니다.',
+  },
+  { // 화(火)
+    title:'타오르는 불꽃형',
+    traits:['사교적','표현력','열정적','직관적','에너제틱'],
+    strength:'분위기를 밝게 만드는 힘이 있고, 감정을 숨기지 않고 표현할 줄 압니다. 결단이 빠르고, 사람들 사이에서 자연스럽게 중심에 서는 매력을 갖고 있어요.',
+    caution:'감정 기복이 큰 편이라 열정이 식으면 급격히 흥미를 잃기도 해요. 시작한 일을 끝까지 이어가려면 잠깐 숨 고르는 시간을 의식적으로 가지는 게 좋습니다.',
+  },
+  { // 토(土)
+    title:'든든한 대지형',
+    traits:['신중함','포용력','실용적','안정지향','우직함'],
+    strength:'꾸준함과 신뢰가 최고의 무기예요. 사람들을 편안하게 만들어주는 포용력이 있고, 위기 상황에서도 쉽게 흔들리지 않는 중심을 갖고 있습니다.',
+    caution:'익숙한 것에 머물려는 경향이 있어 변화 앞에서 둔해질 수 있어요. 가끔은 낯선 시도도 해보는 게 스스로를 넓히는 데 도움이 됩니다.',
+  },
+  { // 금(金)
+    title:'예리한 칼날형',
+    traits:['논리적','원칙주의','완벽주의','결단력','정의감'],
+    strength:'맺고 끊음이 분명하고, 한번 맡은 일은 끝까지 책임지는 사람이에요. 명확한 판단력 덕분에 주변 사람들이 믿고 의지하게 되는 타입입니다.',
+    caution:'스스로에게도, 주변에게도 기준이 높아서 지치기 쉬워요. 완벽하지 않아도 괜찮다는 걸 스스로에게 조금 더 자주 말해주세요.',
+  },
+  { // 수(水)
+    title:'깊은 물결형',
+    traits:['직관적','사색적','적응력','감수성','전략적'],
+    strength:'상황 파악이 빠르고 유연하게 흘러갈 줄 아는 처세술이 있어요. 겉으로 드러내지 않아도 속으로는 깊이 있는 통찰을 하는 편입니다.',
+    caution:'생각이 많아지면 결정을 미루게 되는 편이에요. 속마음을 조금 더 표현하면 주변과의 오해를 줄일 수 있습니다.',
+  },
+];
+
 // 상생: 목→화→토→금→수→목
 const GEN =[1,2,3,4,0];
 // 상극: 목→토, 화→금, 토→수, 금→목, 수→화
@@ -778,12 +830,12 @@ for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.text
 daySel.value=15;
 
 // 지난번에 입력한 생년월일을 기억해서 자동으로 채워준다
+// (양력/음력 적용은 뒤쪽에서 다른 변수 초기화가 끝난 다음 처리한다)
 const savedBirth=loadBirth();
 if(savedBirth&&savedBirth.y&&savedBirth.m&&savedBirth.d){
   yearSel.value=savedBirth.y;
   monthSel.value=savedBirth.m;
   daySel.value=savedBirth.d;
-  setCalType(savedBirth.cal===1?1:0);
 }
 
 let state=null,moodIdx=0;
@@ -876,7 +928,7 @@ function updateInfo(){
   document.getElementById('myinfo').classList.add('show');
   state={y,m,d,yp,dp,tdp,myOh,todayOh,rel,ttiNote,td};
 }
-updateInfo();
+if(savedBirth&&savedBirth.cal===1)setCalType(1);else setCalType(0);
 
 function onTarget0Change(){updateInfo()}
 
@@ -935,6 +987,17 @@ function generate(){
       <div class="relation-desc" style="color:var(--txd)">${rd.desc}</div>
     </div>
   `;
+
+  // 오행 성격 분석 카드
+  const persona=OH_PERSONA[myOh];
+  const supportPartner=GEN.findIndex(v=>v===myOh); // 나를 채워주는 상대
+  const genPartner=GEN[myOh]; // 내 덕에 빛나는 상대
+  const challengePartner=CTRL.findIndex(v=>v===myOh); // 나를 시험하는 상대
+  document.getElementById('personaSub').textContent=`${OH_NAME[myOh]}(${OH_CHAR[myOh]}) · ${OH_KEY[myOh]}`;
+  document.getElementById('personaTraits').innerHTML=persona.traits.map(t=>`<span class="persona-tag">${t}</span>`).join('');
+  document.getElementById('personaStrength').textContent=persona.strength;
+  document.getElementById('personaCaution').textContent=persona.caution;
+  document.getElementById('personaCompat').textContent=`${persona.title}인 당신을 채워주는 든든한 상대는 ${OH_NAME[supportPartner]}(${OH_CHAR[supportPartner]})형, 당신 덕분에 빛나는 상대는 ${OH_NAME[genPartner]}(${OH_CHAR[genPartner]})형이에요. 반대로 ${OH_NAME[challengePartner]}(${OH_CHAR[challengePartner]})형과는 부딪히기 쉬우니 서로 조금 더 배려가 필요해요.`;
 
   document.getElementById('rSub').textContent=`${y}년 ${m}월 ${d}일생${calLabel} · ${yp.name}년 ${dp.name}일 · ${todayStr}`;
   document.getElementById('fortuneText').textContent=fill(fortuneTemplate);
