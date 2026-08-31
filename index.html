@@ -181,6 +181,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .btn-diary-del:hover{border-color:var(--red);color:var(--red)}
 .btn-diary-clear{width:100%;padding:11px;border:1px solid var(--b2);border-radius:10px;background:transparent;color:var(--txm);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .15s}
 .btn-diary-clear:hover{border-color:var(--red);color:var(--red)}
+/* 연속 방문 스트릭 */
+.streak-banner{background:linear-gradient(135deg,#FFF3DE,#FBE9CE);border:1px solid var(--b2);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center}
+.streak-fire{font-size:26px;line-height:1}
+.streak-big{font-family:'Noto Serif KR',serif;font-weight:900;font-size:22px;color:var(--gold);margin:4px 0}
+.streak-sub{font-size:11px;color:var(--txm)}
+.streak-best{font-size:10px;color:var(--txd);margin-top:6px}
+.streak-chip{background:#FBF0DA;border:1px solid var(--golddim);border-radius:20px;padding:9px 14px;font-size:11px;color:var(--gold);font-weight:700;text-align:center;margin:14px 0 2px}
+/* 화면 하단에 잠깐 떴다 사라지는 알림 */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--tx);color:#fff;padding:12px 20px;border-radius:24px;font-size:12px;font-weight:700;box-shadow:var(--sh-md);opacity:0;transition:all .4s var(--ease);z-index:9999;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .btn-share{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-share:hover{border-color:var(--gold);color:var(--gold)}
 .btn-share.ok{border-color:var(--green);color:var(--green)}
@@ -365,6 +375,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <div class="persona-block"><div class="persona-label">✦ 상성</div><div class="persona-text" id="personaCompat"></div></div>
     </div>
     </div>
+    <div class="streak-chip" id="streakChip0" style="display:none"></div>
     <div class="share-row">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoText0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
@@ -515,6 +526,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="main">
   <div class="input-card">
     <div class="slabel">📔 나의 사주 메뉴 기록</div>
+    <div class="streak-banner" id="streakBanner" style="display:none"></div>
     <div class="diary-stat-row" id="diaryStats"></div>
     <div id="diaryList"></div>
     <button class="btn-diary-clear" id="diaryClearBtn" onclick="clearDiary()" style="display:none">전체 기록 삭제</button>
@@ -845,6 +857,13 @@ if(savedBirth&&savedBirth.y&&savedBirth.m&&savedBirth.d){
   daySel.value=savedBirth.d;
 }
 
+// 사이트를 연 순간 "오늘도 방문" 도장을 찍는다 (연속 방문 스트릭)
+const _streakToday=touchStreak();
+renderStreakBanner();
+if(_streakToday.milestone){
+  setTimeout(()=>showToast(`🎉 ${_streakToday.milestone}일 연속 방문 달성! 대단해요`,4500),800);
+}
+
 let state=null,moodIdx=0;
 document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{document.querySelectorAll('.mood-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');moodIdx=parseInt(c.dataset.v)})});
 
@@ -1034,6 +1053,9 @@ function generate(){
 
   // 다이어리에 자동 저장
   saveDiaryEntry(td,myOh,menuData.m,rd.label,rd.emoji);
+
+  // 결과 화면 아래에 연속 방문 안내 칩 표시
+  renderStreakChip('streakChip0');
 }
 
 // ── 사주 다이어리 (localStorage 기록) ──
@@ -1053,6 +1075,7 @@ function saveDiaryEntry(dateObj,oh,menu,relLabel,relEmoji){
 }
 
 function renderDiary(){
+  renderStreakBanner();
   const diary=loadDiary();
   const listEl=document.getElementById('diaryList');
   const statsEl=document.getElementById('diaryStats');
@@ -1100,6 +1123,66 @@ function clearDiary(){
   if(!confirm('전체 기록을 삭제할까요? 되돌릴 수 없어요.'))return;
   saveDiaryData([]);
   renderDiary();
+}
+
+// ── 연속 방문 스트릭 (localStorage) ──
+// 사이트를 실제로 연 날짜만 센다. "날짜 지정" 조회와는 상관없다.
+function _ymd(dt){
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function _keyToDate(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);}
+// a 날짜에서 b 날짜까지 며칠 차이인지 (정수)
+function _dayGap(a,b){return Math.round((_keyToDate(b)-_keyToDate(a))/86400000);}
+function loadStreak(){
+  try{return JSON.parse(localStorage.getItem('sajuStreak')||'null')}catch(e){return null}
+}
+// 오늘 방문 도장 찍기. 어제도 왔으면 연속일 +1, 하루라도 비면 1부터 다시 시작.
+function touchStreak(){
+  const today=_ymd(new Date());
+  let s=loadStreak()||{last:null,count:0,best:0};
+  let milestone=0;
+  if(s.last!==today){
+    const gap=s.last?_dayGap(s.last,today):999;
+    s.count=(gap===1)?s.count+1:1;
+    s.last=today;
+    if(s.count>s.best)s.best=s.count;
+    if(s.count===3||s.count===7||s.count===30||s.count===100)milestone=s.count;
+    try{localStorage.setItem('sajuStreak',JSON.stringify(s))}catch(e){}
+  }
+  return {count:s.count,best:s.best,milestone};
+}
+// 다이어리 탭 상단 스트릭 배너
+function renderStreakBanner(){
+  const el=document.getElementById('streakBanner');
+  if(!el)return;
+  const s=loadStreak();
+  if(!s||!s.count){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`
+    <div class="streak-fire">🔥</div>
+    <div class="streak-big">${s.count}일 연속 방문</div>
+    <div class="streak-sub">내일도 오면 ${s.count+1}일 연속이에요!</div>
+    <div class="streak-best">지금까지 최고 기록 ${s.best}일</div>`;
+}
+// 결과 화면 아래 작은 스트릭 칩
+function renderStreakChip(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const s=loadStreak();
+  if(!s||!s.count){el.style.display='none';return;}
+  el.style.display='block';
+  el.textContent=(s.count<=1)
+    ? '🔥 오늘 첫 방문! 내일도 오면 2일 연속이에요'
+    : `🔥 ${s.count}일 연속 방문 중 · 내일도 확인하면 ${s.count+1}일!`;
+}
+// 화면 아래에 잠깐 떴다 사라지는 알림
+function showToast(msg,ms){
+  let el=document.getElementById('_toast');
+  if(!el){el=document.createElement('div');el.id='_toast';el.className='toast';document.body.appendChild(el);}
+  el.textContent=msg;
+  requestAnimationFrame(()=>el.classList.add('show'));
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),ms||3500);
 }
 
 // ── 탭 전환 ──
