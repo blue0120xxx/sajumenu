@@ -28,6 +28,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
+<!-- 지역 메뉴 커뮤니티(제안·추천)용 Firebase. 설정 전이면 조용히 비활성화됨 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -234,6 +237,24 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .region-more-item{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:11px 14px;margin-bottom:8px}
 .region-more-name{font-size:13px;font-weight:700;color:var(--tx)}
 .region-more-desc{font-size:10px;color:var(--txd);margin-top:2px;line-height:1.55}
+/* 지역 메뉴 주민 추천 */
+.comm-empty{text-align:center;color:var(--txm);font-size:12px;padding:18px 10px;line-height:1.7}
+.comm-list-label{font-size:11px;font-weight:700;color:var(--txm);margin:14px 0 8px}
+.comm-item{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.comm-item.promoted{border-color:var(--green);background:#F1F8F3}
+.comm-item-body{flex:1;min-width:0}
+.comm-item-name{font-size:13px;font-weight:700;color:var(--tx)}
+.comm-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;margin-left:6px;white-space:nowrap}
+.comm-badge.hot{background:#FBE4D8;color:var(--red)}
+.comm-badge.done{background:#E3F0E7;color:var(--green)}
+.comm-item-desc{font-size:10px;color:var(--txd);margin-top:2px;line-height:1.5}
+.comm-item-meta{font-size:9px;color:var(--txm);margin-top:3px}
+.btn-vote{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:48px;padding:7px 0;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-vote .vote-count{font-size:14px;font-family:'Noto Serif KR',serif}
+.btn-vote.voted{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn-vote:active{transform:scale(.94)}
+.comm-input{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:10px 12px;outline:none;margin-bottom:8px;transition:border-color .2s}
+.comm-input:focus{border-color:var(--gold)}
 .btn-share{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-share:hover{border-color:var(--gold);color:var(--gold)}
 .btn-share.ok{border-color:var(--green);color:var(--green)}
@@ -639,6 +660,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
         <div class="region-more-label">✦ <span id="regionName2"></span>의 다른 특색 메뉴 ✦</div>
         <div id="regionMoreList"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="input-card" id="communityCard">
+    <div class="slabel">🙋 <span id="commRegionName"></span> 주민 추천</div>
+    <p class="region-intro">여기 오면 이건 꼭 먹어야 한다는 메뉴를 추천해 주세요. <b id="commThresholdTxt">8표</b> 이상 받으면 정식 메뉴로 자동 등록돼요.</p>
+    <div id="commPromoted"></div>
+    <div id="commPending"></div>
+    <div id="commEmpty" class="comm-empty" style="display:none">아직 제안된 메뉴가 없어요.<br>첫 제안을 남겨보세요!</div>
+    <div id="commDisabled" class="comm-empty" style="display:none">주민 추천 기능은 곧 열려요 🔧</div>
+    <button class="btn-add-person" id="commAddBtn" onclick="toggleCommForm()" style="margin-top:12px;display:none">＋ 이 지역 메뉴 제안하기</button>
+    <div id="commForm" style="display:none">
+      <input class="comm-input" type="text" id="commMenu" maxlength="30" placeholder="메뉴 이름 (예: 오모가리탕)">
+      <input class="comm-input" type="text" id="commDesc" maxlength="60" placeholder="한 줄 설명 (선택)">
+      <input class="comm-input" type="text" id="commNick" maxlength="12" placeholder="닉네임 (선택)">
+      <button class="btn-go" onclick="submitSuggestion()">제안 등록하기</button>
     </div>
   </div>
 </div>
@@ -1683,6 +1720,7 @@ function setMode(m){
   document.getElementById('modeBtn1').classList.toggle('active',m===1);
   document.getElementById('sajuMode').style.display=m===0?'block':'none';
   document.getElementById('regionMode').style.display=m===1?'block':'none';
+  if(m===1)renderRegion(); // 화면 열릴 때 주민 추천까지 갱신
   const title=document.getElementById('heroTitle');
   const sub=document.getElementById('heroSub');
   const orb=document.getElementById('heroOrb');
@@ -2136,6 +2174,148 @@ function renderRegion(){
   const others=reg.menus.filter((_,i)=>i!==pi);
   document.getElementById('regionMoreList').innerHTML=others.map(x=>
     `<div class="region-more-item"><div class="region-more-name">${x.m}</div><div class="region-more-desc">${x.d}</div></div>`).join('');
+  // 주민 추천은 지역 메뉴 화면을 실제로 열었을 때만 불러온다 (불필요한 DB 조회 방지)
+  const rm=document.getElementById('regionMode');
+  if(rm&&rm.style.display!=='none')renderRegionCommunity(reg.r);
+}
+
+// ===== 지역 메뉴 주민 추천 (Firebase Firestore) =====
+// firebase 콘솔 > 프로젝트 설정 > 내 앱(웹) 의 firebaseConfig 값을 그대로 붙여넣으세요.
+// projectId 가 비어 있으면 이 기능은 조용히 꺼진 상태로 둡니다.
+const FIREBASE_CONFIG={
+  apiKey:"",
+  authDomain:"",
+  projectId:"",
+  appId:""
+};
+const COMMUNITY_THRESHOLD=8; // 이 표 이상 받으면 정식 메뉴 풀에 반영 (봇이 주 1회 index.html에 병합)
+const BAD_WORDS=['시발','씨발','ㅅㅂ','병신','ㅄ','좆','섹스','fuck','자지','보지','개새','엿먹','존나'];
+let _db=null,_dbTried=false;
+function ensureCommunity(){
+  if(_dbTried)return _db;
+  _dbTried=true;
+  if(!FIREBASE_CONFIG.projectId||!window.firebase)return null;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    _db=firebase.firestore();
+  }catch(e){_db=null;}
+  return _db;
+}
+function _devId(){
+  let id=null;try{id=localStorage.getItem('sajuDevId');}catch(e){}
+  if(!id){id='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);try{localStorage.setItem('sajuDevId',id);}catch(e){}}
+  return id;
+}
+function _votedSet(){try{return new Set(JSON.parse(localStorage.getItem('sajuVoted')||'[]'));}catch(e){return new Set();}}
+function _saveVoted(s){try{localStorage.setItem('sajuVoted',JSON.stringify([...s]));}catch(e){}}
+function _normMenu(s){return (s||'').toLowerCase().replace(/[\s()·\-+,.의]/g,'');}
+function _esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+
+async function renderRegionCommunity(regionName){
+  const promoted=document.getElementById('commPromoted');
+  const pending=document.getElementById('commPending');
+  const empty=document.getElementById('commEmpty');
+  const disabled=document.getElementById('commDisabled');
+  const addBtn=document.getElementById('commAddBtn');
+  if(!promoted)return;
+  document.getElementById('commRegionName').textContent=regionName;
+  document.getElementById('commThresholdTxt').textContent=COMMUNITY_THRESHOLD+'표';
+  promoted.innerHTML='';pending.innerHTML='';empty.style.display='none';disabled.style.display='none';disabled.textContent='주민 추천 기능은 곧 열려요 🔧';
+  const db=ensureCommunity();
+  if(!db){disabled.style.display='block';addBtn.style.display='none';return;}
+  addBtn.style.display='block';
+  let docs=[];
+  try{
+    const snap=await db.collection('regionSuggestions').where('region','==',regionName).get();
+    snap.forEach(d=>docs.push(Object.assign({id:d.id},d.data())));
+  }catch(e){disabled.style.display='block';disabled.textContent='제안을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';return;}
+  // 정식 메뉴에 이미 있는 이름은 제외 (봇이 반영한 것)
+  const reg=REGION_MENUS.find(r=>r.r===regionName);
+  const curated=new Set((reg?reg.menus:[]).map(m=>_normMenu(m.m)));
+  // 같은 메뉴 여러 번 제안됐으면 하나로 묶고 표 합산
+  const groups={};
+  docs.forEach(d=>{
+    const k=_normMenu(d.menu);
+    if(!k||curated.has(k))return;
+    if(!groups[k])groups[k]={rep:d,total:0,ids:[]};
+    groups[k].ids.push(d.id);
+    groups[k].total+=(d.votes||0);
+    if((d.votes||0)>(groups[k].rep.votes||0))groups[k].rep=d;
+  });
+  let list=Object.keys(groups).map(k=>Object.assign({},groups[k].rep,{votes:groups[k].total,_ids:groups[k].ids}));
+  list.sort((a,b)=>b.votes-a.votes);
+  const voted=_votedSet();
+  const pro=list.filter(x=>x.votes>=COMMUNITY_THRESHOLD);
+  const pend=list.filter(x=>x.votes<COMMUNITY_THRESHOLD);
+  if(!list.length)empty.style.display='block';
+  if(pro.length)promoted.innerHTML='<div class="comm-list-label">🙌 주민 추천으로 등록된 메뉴</div>'+pro.map(x=>_commItem(x,voted,true,false)).join('');
+  if(pend.length)pending.innerHTML='<div class="comm-list-label">🗳️ 제안 중 · 추천하면 정식 등록돼요</div>'+pend.map((x,i)=>_commItem(x,voted,false,i===0)).join('');
+}
+function _commItem(x,voted,isPro,isHot){
+  const isVoted=x._ids.some(id=>voted.has(id));
+  const badge=isPro?'<span class="comm-badge done">등록됨</span>':(isHot&&x.votes>0?'<span class="comm-badge hot">🏆 인기</span>':'');
+  return `<div class="comm-item${isPro?' promoted':''}">
+    <div class="comm-item-body">
+      <div class="comm-item-name">${_esc(x.menu)}${badge}</div>
+      ${x.desc?`<div class="comm-item-desc">${_esc(x.desc)}</div>`:''}
+      ${x.nick?`<div class="comm-item-meta">추천: ${_esc(x.nick)}</div>`:''}
+    </div>
+    <button class="btn-vote${isVoted?' voted':''}" onclick="voteSuggestion('${x._ids[0]}','${x._ids.join(',')}')">
+      <span>${isVoted?'✓':'👍'}</span><span class="vote-count">${x.votes}</span>
+    </button>
+  </div>`;
+}
+async function voteSuggestion(primaryId,idsCsv){
+  const db=ensureCommunity();if(!db)return;
+  const voted=_votedSet();
+  const ids=idsCsv.split(',');
+  const already=ids.some(id=>voted.has(id));
+  const inc=firebase.firestore.FieldValue.increment(already?-1:1);
+  try{
+    await db.collection('regionSuggestions').doc(primaryId).update({votes:inc});
+    if(already){ids.forEach(id=>voted.delete(id));showToast('추천을 취소했어요');}
+    else{voted.add(primaryId);showToast('👍 추천했어요!');}
+    _saveVoted(voted);
+    const cur=parseInt(document.getElementById('regionSel').value);
+    renderRegionCommunity(REGION_MENUS[cur].r);
+  }catch(e){showToast('잠시 후 다시 시도해 주세요');}
+}
+function toggleCommForm(){
+  const f=document.getElementById('commForm');
+  f.style.display=(f.style.display==='none'||!f.style.display)?'block':'none';
+}
+async function submitSuggestion(){
+  const db=ensureCommunity();if(!db)return;
+  const menu=document.getElementById('commMenu').value.trim();
+  const desc=document.getElementById('commDesc').value.trim();
+  const nick=document.getElementById('commNick').value.trim();
+  const cur=parseInt(document.getElementById('regionSel').value);
+  const regionName=REGION_MENUS[cur].r;
+  if(menu.length<2){showToast('메뉴 이름을 입력해 주세요');return;}
+  if(BAD_WORDS.some(w=>(menu+desc+nick).includes(w))){showToast('부적절한 표현이 있어요');return;}
+  let subs=[];try{subs=JSON.parse(localStorage.getItem('sajuSubs')||'[]');}catch(e){}
+  subs=subs.filter(t=>t>Date.now()-86400000);
+  if(subs.length>=5){showToast('오늘 제안은 여기까지! 내일 또 부탁해요');return;}
+  try{
+    const snap=await db.collection('regionSuggestions').where('region','==',regionName).get();
+    let dup=null;
+    snap.forEach(d=>{if(_normMenu(d.data().menu)===_normMenu(menu))dup=d;});
+    if(dup){
+      await db.collection('regionSuggestions').doc(dup.id).update({votes:firebase.firestore.FieldValue.increment(1)});
+      const v=_votedSet();v.add(dup.id);_saveVoted(v);
+      showToast('이미 있는 메뉴라 추천으로 반영했어요!');
+    }else{
+      await db.collection('regionSuggestions').add({
+        region:regionName,menu:menu.slice(0,30),desc:desc.slice(0,60),nick:nick.slice(0,12),
+        votes:1,dev:_devId(),createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('🙌 메뉴를 제안했어요!');
+    }
+    subs.push(Date.now());try{localStorage.setItem('sajuSubs',JSON.stringify(subs));}catch(e){}
+    document.getElementById('commMenu').value='';document.getElementById('commDesc').value='';
+    document.getElementById('commForm').style.display='none';
+    renderRegionCommunity(regionName);
+  }catch(e){showToast('등록에 실패했어요. 잠시 후 다시');}
 }
 
 // 지역 선택 드롭다운 채우기 + 지난번 선택 기억

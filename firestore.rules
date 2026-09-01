@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// 지역 메뉴 "주민 추천" 컬렉션 규칙
+// Firebase 콘솔 > Firestore Database > 규칙 탭에 그대로 붙여넣고 게시하세요.
+// 로그인 없이 쓰는 구조라, 필드 모양만 검증하고 봇이 주 1회 청소/병합합니다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /regionSuggestions/{id} {
+
+      // 누구나 읽기 가능
+      allow read: if true;
+
+      // 새 제안 등록: 필드 모양이 맞을 때만
+      allow create: if request.resource.data.region is string
+        && request.resource.data.region.size() <= 20
+        && request.resource.data.menu is string
+        && request.resource.data.menu.size() >= 2
+        && request.resource.data.menu.size() <= 30
+        && request.resource.data.desc.size() <= 60
+        && request.resource.data.nick.size() <= 12
+        && request.resource.data.votes == 1;
+
+      // 추천/취소: votes 필드만, ±1 범위 안에서만 변경 허용
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        && request.resource.data.votes >= resource.data.votes - 1
+        && request.resource.data.votes <= resource.data.votes + 1;
+
+      // 삭제는 콘솔/봇(Admin)만
+      allow delete: if false;
+    }
+  }
+}
