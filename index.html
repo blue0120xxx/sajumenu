@@ -708,7 +708,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 
   <div class="input-card" id="communityCard">
     <div class="slabel">🙋 <span id="commRegionName"></span> 주민 추천</div>
-    <p class="region-intro">여기 오면 이건 꼭 먹어야 한다는 메뉴를 추천해 주세요. <b id="commThresholdTxt">8표</b> 이상 받으면 정식 메뉴로 자동 등록돼요.</p>
+    <p class="region-intro">여기 오면 이건 꼭 먹어야 한다는 메뉴를 추천해 주세요. 추천을 많이 받은 순서로 나열되고, 상위 메뉴는 이 지역 대표 메뉴로 올라가요.</p>
     <div id="commPromoted"></div>
     <div id="commPending"></div>
     <div id="commEmpty" class="comm-empty" style="display:none">아직 제안된 메뉴가 없어요.<br>첫 제안을 남겨보세요!</div>
@@ -2333,7 +2333,6 @@ async function renderRegionCommunity(regionName){
   const addBtn=document.getElementById('commAddBtn');
   if(!promoted)return;
   document.getElementById('commRegionName').textContent=regionName;
-  document.getElementById('commThresholdTxt').textContent=COMMUNITY_THRESHOLD+'표';
   promoted.innerHTML='';pending.innerHTML='';empty.style.display='none';disabled.style.display='none';disabled.textContent='주민 추천 기능은 곧 열려요 🔧';
   const db=ensureCommunity();
   if(!db){disabled.style.display='block';addBtn.style.display='none';return;}
@@ -2362,12 +2361,12 @@ async function renderRegionCommunity(regionName){
   const pro=list.filter(x=>x.votes>=COMMUNITY_THRESHOLD);
   const pend=list.filter(x=>x.votes<COMMUNITY_THRESHOLD);
   if(!list.length)empty.style.display='block';
-  if(pro.length)promoted.innerHTML='<div class="comm-list-label">🙌 주민 추천으로 등록된 메뉴</div>'+pro.map(x=>_commItem(x,voted,true,false)).join('');
-  if(pend.length)pending.innerHTML='<div class="comm-list-label">🗳️ 제안 중 · 추천하면 정식 등록돼요</div>'+pend.map((x,i)=>_commItem(x,voted,false,i===0)).join('');
+  if(pro.length)promoted.innerHTML='<div class="comm-list-label">🏅 추천 상위 · 이 지역 대표 메뉴로 올라가요</div>'+pro.map(x=>_commItem(x,voted,true,false)).join('');
+  if(pend.length)pending.innerHTML='<div class="comm-list-label">🗳️ 추천 받는 중 · 👍 많이 받을수록 위로 올라가요</div>'+pend.map((x,i)=>_commItem(x,voted,false,i===0)).join('');
 }
 function _commItem(x,voted,isPro,isHot){
   const isVoted=x._ids.some(id=>voted.has(id));
-  const badge=isPro?'<span class="comm-badge done">등록됨</span>':(isHot&&x.votes>0?'<span class="comm-badge hot">🏆 인기</span>':'');
+  const badge=isPro?'<span class="comm-badge done">🏅 추천 상위</span>':(isHot&&x.votes>0?'<span class="comm-badge hot">🏆 인기</span>':'');
   return `<div class="comm-item${isPro?' promoted':''}">
     <div class="comm-item-body">
       <div class="comm-item-name">${_esc(x.menu)}${badge}</div>
