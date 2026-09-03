@@ -408,6 +408,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .taste-cta .btn-kakao{flex:1}
 .taste-cross{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--gold);padding:12px;border:1px dashed var(--b2);border-radius:12px;cursor:pointer;text-decoration:none}
 .taste-cross:hover{background:#FBF0DA}
+/* ── 날씨 연동 오늘의 메뉴 ── */
+.weather-card{max-width:540px;margin:0 auto 6px;padding:0 16px;position:relative;z-index:1}
+.weather-cta{width:100%;padding:12px;border:1px dashed var(--b2);border-radius:12px;background:var(--s1);color:var(--gold);font-family:'Noto Sans KR',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.weather-cta:hover{background:#FBF0DA}
+.weather-cta:disabled{opacity:.6;cursor:default}
+.weather-body{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:13px 15px;box-shadow:var(--sh-sm)}
+.weather-now{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.weather-now .wn-sub{font-weight:400;color:var(--txm)}
+.weather-menus{font-size:12px;color:var(--txd);line-height:1.7}
+.weather-menus b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -430,6 +440,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
   <h1 id="heroTitle">사주팔자로 분석하는<br><span class="gold-txt">오늘의 내 메뉴</span></h1>
   <p class="hero-sub" id="heroSub">생년월일만 입력하면 나의 오행 기운에 맞는<br>오늘의 메뉴를 알려드려요</p>
 </section>
+
+<!-- 날씨 연동 오늘의 메뉴 (위치를 허용하면 지금 날씨에 맞는 메뉴를 보여줘요) -->
+<div class="weather-card" id="weatherCard">
+  <button class="weather-cta" id="weatherBtn" onclick="askWeather()">📍 지금 날씨로 메뉴 추천받기</button>
+  <div class="weather-body" id="weatherBody" style="display:none">
+    <div class="weather-now" id="weatherNow"></div>
+    <div class="weather-menus" id="weatherMenus"></div>
+  </div>
+</div>
 
 <!-- ── 사주 메뉴 모드 ── -->
 <div id="sajuMode">
@@ -1983,6 +2002,65 @@ function copyTaste(){
     setTimeout(()=>{b.textContent='📋 복사';},2000);
   });
 }
+
+// ===== 날씨 연동 오늘의 메뉴 (open-meteo, 무료·API 키 없음) =====
+const WX_MENU={
+  rain: {emoji:'🌧️',label:'비 오는 날',  menus:['파전에 막걸리','얼큰한 칼국수','수제비','부대찌개','짬뽕']},
+  snow: {emoji:'❄️',label:'눈 오는 날',  menus:['뜨끈한 어묵탕','샤브샤브','국밥','만둣국','붕어빵']},
+  hot:  {emoji:'🔥',label:'더운 날',    menus:['시원한 냉면','콩국수','비빔국수','밀면','팥빙수']},
+  cold: {emoji:'🥶',label:'추운 날',    menus:['설렁탕','국밥','부대전골','칼국수','호빵']},
+  clear:{emoji:'☀️',label:'맑은 날',    menus:['소풍 김밥','샌드위치','파스타','돈까스','비빔밥']},
+  cloud:{emoji:'⛅',label:'흐린 날',    menus:['따끈한 라면','제육덮밥','김치찌개','우동','오므라이스']},
+};
+// 기온과 날씨 코드(WMO)로 카테고리를 정한다
+function wxCategory(code,temp){
+  if(temp>=28)return'hot';
+  if(temp<=3)return'cold';
+  if(code>=71&&code<=86)return'snow';
+  if((code>=51&&code<=67)||(code>=80&&code<=99))return'rain';
+  if(code===0||code===1)return'clear';
+  return'cloud';
+}
+// 시간대에 따라 3개 추천이 조금씩 돌아가게 (다시 와도 새로운 느낌)
+function wxPick(menus){
+  const h=new Date().getHours()%menus.length;
+  return menus.slice(h).concat(menus.slice(0,h)).slice(0,3);
+}
+function wxShow(cat,temp){
+  const w=WX_MENU[cat];if(!w)return;
+  document.getElementById('weatherNow').innerHTML=`${w.emoji} 지금 <b>${temp}°C</b> · <span class="wn-sub">${w.label}</span>`;
+  document.getElementById('weatherMenus').innerHTML=`이런 날엔 → <b>${wxPick(w.menus).join(' · ')}</b>`;
+  document.getElementById('weatherBtn').style.display='none';
+  document.getElementById('weatherBody').style.display='block';
+}
+function askWeather(){
+  const btn=document.getElementById('weatherBtn');
+  if(!navigator.geolocation){btn.textContent='이 브라우저는 위치를 지원하지 않아요';btn.disabled=true;return;}
+  btn.textContent='📍 위치 확인 중…';btn.disabled=true;
+  navigator.geolocation.getCurrentPosition(
+    pos=>fetchWeather(pos.coords.latitude,pos.coords.longitude),
+    ()=>{btn.textContent='위치를 못 받았어요. 다시 시도';btn.disabled=false;},
+    {timeout:8000,maximumAge:600000}
+  );
+}
+async function fetchWeather(lat,lon){
+  const btn=document.getElementById('weatherBtn');
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}&current=temperature_2m,weather_code&timezone=auto`);
+    const j=await r.json();
+    const temp=Math.round(j.current.temperature_2m);
+    const cat=wxCategory(j.current.weather_code,temp);
+    wxShow(cat,temp);
+    try{sessionStorage.setItem('sajuWx',JSON.stringify({temp,cat,t:Date.now()}));}catch(e){}
+  }catch(e){
+    btn.textContent='날씨를 못 불러왔어요. 다시 시도';btn.disabled=false;
+  }
+}
+// 이번 세션에서 이미 받아왔으면(30분 이내) 버튼 없이 바로 보여준다
+(function restoreWeather(){
+  let s=null;try{s=JSON.parse(sessionStorage.getItem('sajuWx')||'null');}catch(e){}
+  if(s&&Date.now()-s.t<1800000)wxShow(s.cat,s.temp);
+})();
 
 // ── 궁합 셀렉트 채우기 ──
 ['cy1','cm1','cd1','cy2','cm2','cd2'].forEach(id=>{
