@@ -2333,64 +2333,79 @@ async function renderRegionCommunity(regionName){
   const addBtn=document.getElementById('commAddBtn');
   if(!promoted)return;
   document.getElementById('commRegionName').textContent=regionName;
-  promoted.innerHTML='';pending.innerHTML='';empty.style.display='none';disabled.style.display='none';disabled.textContent='주민 추천 기능은 곧 열려요 🔧';
+  empty.style.display='none';disabled.style.display='none';disabled.textContent='주민 추천 기능은 곧 열려요 🔧';
   const db=ensureCommunity();
-  if(!db){disabled.style.display='block';addBtn.style.display='none';return;}
+  if(!db){promoted.innerHTML='';pending.innerHTML='';disabled.style.display='block';addBtn.style.display='none';return;}
   addBtn.style.display='block';
   let docs=[];
   try{
     const snap=await db.collection('regionSuggestions').where('region','==',regionName).get();
     snap.forEach(d=>docs.push(Object.assign({id:d.id},d.data())));
-  }catch(e){disabled.style.display='block';disabled.textContent='제안을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';return;}
-  // 정식 메뉴에 이미 있는 이름은 제외 (봇이 반영한 것)
+  }catch(e){
+    // 불러오기 실패: 이미 보여주던 목록은 그대로 두고, 처음이라 비어 있을 때만 안내 문구
+    if(!pending.innerHTML && !promoted.innerHTML){disabled.style.display='block';disabled.textContent='제안을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';}
+    return;
+  }
+  promoted.innerHTML='';pending.innerHTML='';
+  // 이미 이 지역 대표 메뉴로 올라간 이름 (봇이 반영한 것)
   const reg=REGION_MENUS.find(r=>r.r===regionName);
   const curated=new Set((reg?reg.menus:[]).map(m=>_normMenu(m.m)));
-  // 같은 메뉴 여러 번 제안됐으면 하나로 묶고 표 합산
+  // 같은 메뉴가 여러 번 제안됐으면 하나로 묶고 표를 합산한다
   const groups={};
   docs.forEach(d=>{
     const k=_normMenu(d.menu);
-    if(!k||curated.has(k))return;
-    if(!groups[k])groups[k]={rep:d,total:0,ids:[]};
+    if(!k)return;
+    if(!groups[k])groups[k]={rep:d,total:0,ids:[],done:curated.has(k)};
     groups[k].ids.push(d.id);
     groups[k].total+=(d.votes||0);
     if((d.votes||0)>(groups[k].rep.votes||0))groups[k].rep=d;
   });
-  let list=Object.keys(groups).map(k=>Object.assign({},groups[k].rep,{votes:groups[k].total,_ids:groups[k].ids}));
-  list.sort((a,b)=>b.votes-a.votes);
+  let list=Object.keys(groups).map(k=>Object.assign({},groups[k].rep,{votes:groups[k].total,_ids:groups[k].ids,done:groups[k].done}));
+  // 추천 많은 순으로 정렬 (이미 대표가 된 메뉴는 목록에서 사라지지 않고 아래쪽에 남는다)
+  list.sort((a,b)=>(a.done-b.done)||(b.votes-a.votes));
   const voted=_votedSet();
-  const pro=list.filter(x=>x.votes>=COMMUNITY_THRESHOLD);
-  const pend=list.filter(x=>x.votes<COMMUNITY_THRESHOLD);
-  if(!list.length)empty.style.display='block';
-  if(pro.length)promoted.innerHTML='<div class="comm-list-label">🏅 추천 상위 · 이 지역 대표 메뉴로 올라가요</div>'+pro.map(x=>_commItem(x,voted,true,false)).join('');
-  if(pend.length)pending.innerHTML='<div class="comm-list-label">🗳️ 추천 받는 중 · 👍 많이 받을수록 위로 올라가요</div>'+pend.map((x,i)=>_commItem(x,voted,false,i===0)).join('');
+  if(!list.length){empty.style.display='block';return;}
+  let firstOpen=list.findIndex(x=>!x.done); // 인기 배지는 아직 대표가 아닌 1등에게만
+  pending.innerHTML='<div class="comm-list-label">🗳️ 추천 많은 순 · 상위 메뉴는 이 지역 대표 메뉴로 올라가요</div>'
+    +list.map((x,i)=>_commItem(x,voted,i===firstOpen)).join('');
 }
-function _commItem(x,voted,isPro,isHot){
+function _commItem(x,voted,isHot){
   const isVoted=x._ids.some(id=>voted.has(id));
-  const badge=isPro?'<span class="comm-badge done">🏅 추천 상위</span>':(isHot&&x.votes>0?'<span class="comm-badge hot">🏆 인기</span>':'');
-  return `<div class="comm-item${isPro?' promoted':''}">
+  let badge='';
+  if(x.done)badge='<span class="comm-badge done">✅ 대표 메뉴</span>';
+  else if(x.votes>=COMMUNITY_THRESHOLD)badge='<span class="comm-badge done">🏅 추천 상위</span>';
+  else if(isHot&&x.votes>0)badge='<span class="comm-badge hot">🏆 인기</span>';
+  // 이미 대표가 된 메뉴는 추천 버튼 대신 표 수만 보여준다
+  const voteBtn=x.done
+    ?`<div class="btn-vote voted" style="opacity:.55;cursor:default"><span>✓</span><span class="vote-count">${x.votes}</span></div>`
+    :`<button class="btn-vote${isVoted?' voted':''}" onclick="voteSuggestion('${x._ids[0]}','${x._ids.join(',')}',this)"><span>${isVoted?'✓':'👍'}</span><span class="vote-count">${x.votes}</span></button>`;
+  return `<div class="comm-item${x.done?' promoted':''}">
     <div class="comm-item-body">
       <div class="comm-item-name">${_esc(x.menu)}${badge}</div>
       ${x.desc?`<div class="comm-item-desc">${_esc(x.desc)}</div>`:''}
       ${x.nick?`<div class="comm-item-meta">추천: ${_esc(x.nick)}</div>`:''}
     </div>
-    <button class="btn-vote${isVoted?' voted':''}" onclick="voteSuggestion('${x._ids[0]}','${x._ids.join(',')}')">
-      <span>${isVoted?'✓':'👍'}</span><span class="vote-count">${x.votes}</span>
-    </button>
+    ${voteBtn}
   </div>`;
 }
-async function voteSuggestion(primaryId,idsCsv){
+async function voteSuggestion(primaryId,idsCsv,btn){
   const db=ensureCommunity();if(!db)return;
   const voted=_votedSet();
   const ids=idsCsv.split(',');
   const already=ids.some(id=>voted.has(id));
-  const inc=firebase.firestore.FieldValue.increment(already?-1:1);
   try{
-    await db.collection('regionSuggestions').doc(primaryId).update({votes:inc});
+    await db.collection('regionSuggestions').doc(primaryId).update({votes:firebase.firestore.FieldValue.increment(already?-1:1)});
     if(already){ids.forEach(id=>voted.delete(id));showToast('추천을 취소했어요');}
     else{voted.add(primaryId);showToast('👍 추천했어요!');}
     _saveVoted(voted);
-    const cur=parseInt(document.getElementById('regionSel').value);
-    renderRegionCommunity(REGION_MENUS[cur].r);
+    // 목록을 다시 그리지 않고 이 항목의 숫자·버튼만 바로 바꾼다 (메뉴가 사라지지 않게)
+    if(btn){
+      const cnt=btn.querySelector('.vote-count');
+      cnt.textContent=Math.max(0,(parseInt(cnt.textContent)||0)+(already?-1:1));
+      btn.classList.toggle('voted',!already);
+      const ico=btn.querySelector('span');
+      if(ico)ico.textContent=already?'👍':'✓';
+    }
   }catch(e){showToast('잠시 후 다시 시도해 주세요');}
 }
 function toggleCommForm(){
