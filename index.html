@@ -26,6 +26,37 @@
 <meta name="twitter:description" content="생년월일만 입력하면 사주팔자와 오행으로 오늘 먹을 메뉴를 알려드려요.">
 <meta name="twitter:image" content="https://sajumenu.com/og-image.png">
 
+<!-- 검색엔진용 구조화 데이터: 사이트 정보 + 자주 묻는 질문 -->
+<!-- 구글이 이 내용을 읽어서 검색 결과에 사이트 설명과 Q&A를 더 잘 보여줘요 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "오늘의 사주 메뉴",
+      "url": "https://sajumenu.com/",
+      "description": "생년월일과 사주팔자 오행으로 오늘 먹을 메뉴를 추천하는 무료 서비스. 개인 운세 메뉴, 커플 궁합 메뉴, 밥값 내기, 지역별 특색 메뉴까지.",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "ko",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "사주 메뉴는 어떻게 추천되나요?", "acceptedAnswer": { "@type": "Answer", "text": "생년월일로 년주와 일주를 뽑고, 오늘 날짜의 일진과 비교합니다. 내 오행과 오늘 기운의 상생·상극 관계에 지금 기분을 더해 그날의 메뉴를 골라줍니다." } },
+        { "@type": "Question", "name": "정말 무료인가요?", "acceptedAnswer": { "@type": "Answer", "text": "네, 모든 기능이 완전 무료입니다. 로그인이나 결제 없이 바로 이용할 수 있습니다." } },
+        { "@type": "Question", "name": "생년월일 정보가 서버에 저장되나요?", "acceptedAnswer": { "@type": "Answer", "text": "아니요. 입력한 생년월일은 사용자의 브라우저에만 저장되어 다음 방문 때 자동으로 채워질 뿐, 외부로 전송되지 않습니다." } },
+        { "@type": "Question", "name": "음력 생일도 넣을 수 있나요?", "acceptedAnswer": { "@type": "Answer", "text": "네. 양력·음력 버튼으로 전환해 입력하면 자동으로 양력으로 변환해 계산합니다(±1일 오차 가능)." } },
+        { "@type": "Question", "name": "궁합 메뉴는 무엇인가요?", "acceptedAnswer": { "@type": "Answer", "text": "두 사람의 생년월일을 넣으면 오행 궁합을 보고 함께 먹으면 좋은 메뉴를 추천합니다. 링크로 상대를 초대할 수도 있습니다." } },
+        { "@type": "Question", "name": "밥값 내기는 어떻게 정해지나요?", "acceptedAnswer": { "@type": "Answer", "text": "여러 명의 생일을 넣으면 각자의 오늘 운세 점수를 계산해 가장 낮거나 높은 사람이 밥값 주인공으로 뽑힙니다. 재미로 즐기는 기능입니다." } }
+      ]
+    }
+  ]
+}
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
 <!-- 지역 메뉴 커뮤니티(제안·추천)용 Firebase. 설정 전이면 조용히 비활성화됨 -->
@@ -339,6 +370,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .payer-title.loser-mode{color:var(--red)}
 .payer-name{font-family:'Noto Serif KR',serif;font-size:26px;font-weight:900;color:var(--tx);margin-bottom:6px}
 .payer-reason{font-size:12px;color:var(--txd);line-height:1.7}
+/* ── 맨 아래 소개글 · 자주 묻는 질문 (검색 노출용 본문 텍스트) ── */
+.seo-section{max-width:540px;margin:6px auto 0;padding:0 16px 24px;position:relative;z-index:1}
+.seo-section h2{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:900;color:var(--tx);margin:24px 0 10px}
+.seo-p{font-size:13px;line-height:1.9;color:var(--txd);margin-bottom:10px}
+.seo-p b{color:var(--golddim)}
+.oh-guide{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+.oh-guide-item{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:11px 14px;font-size:12.5px;line-height:1.7;color:var(--txd)}
+.oh-guide-item b{color:var(--gold)}
+.faq-item{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:13px 15px;margin-bottom:8px}
+.faq-q{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.faq-a{font-size:12.5px;line-height:1.8;color:var(--txd)}
+.site-footer{border-top:1px solid var(--b1);margin-top:20px;padding:18px 16px 32px;text-align:center;font-size:11px;line-height:1.9;color:var(--txm);position:relative;z-index:1}
+.site-footer a{color:var(--gold);text-decoration:none}
 </style>
 </head>
 <body>
@@ -462,7 +506,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 맛집 검색</a>
     </div>
     <div class="share-row">
-      <button class="btn-kakao" onclick="shareKakao(window._kakaoText0)">💬 카카오톡 공유</button>
+      <button class="btn-kakao" onclick="shareKakao(window._kakaoText0, window._shareLink0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
       <button class="btn-img" id="imgBtn0" onclick="downloadCard('shareCard0','imgBtn0','사주메뉴')">🖼️ 이미지 저장</button>
       <button class="btn-retry" onclick="generate()">🔮 다시 보기</button>
@@ -680,6 +724,57 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 </div><!-- /regionMode -->
 
 <div class="disclaimer">🍚 <span>사주는 사주일 뿐, 재미로만 봐주세요 :)</span></div>
+
+<!-- ── 사이트 소개 & 자주 묻는 질문 (검색엔진이 읽는 본문 글) ── -->
+<section class="seo-section">
+  <h2>오늘 뭐 먹지? 사주로 정하는 오늘의 메뉴</h2>
+  <p class="seo-p">
+    매일 반복되는 "점심 뭐 먹지" 고민, <b>오늘의 사주 메뉴</b>가 대신 정해드려요.
+    생년월일을 넣으면 사주팔자와 오행(목·화·토·금·수) 기운을 풀어서
+    오늘 나에게 맞는 메뉴 한 가지와 끼니별 메뉴, 피하면 좋은 금기 메뉴까지 알려줘요.
+    커플 궁합 메뉴, 여럿이 밥값 내기 정하기, 지역별 특색 메뉴도 <b>완전 무료</b>로 즐길 수 있어요.
+  </p>
+
+  <h2>오행으로 보는 메뉴 성향</h2>
+  <div class="oh-guide">
+    <div class="oh-guide-item"><b>목(木) 기운</b> — 초록 채소와 새콤한 맛. 나물비빔밥, 샐러드, 냉면처럼 몸을 가볍게 하는 메뉴.</div>
+    <div class="oh-guide-item"><b>화(火) 기운</b> — 매운맛과 뜨거운 음식. 떡볶이, 불닭, 마라탕처럼 기운을 끌어올리는 메뉴.</div>
+    <div class="oh-guide-item"><b>토(土) 기운</b> — 단맛과 든든한 한 그릇. 된장찌개, 국밥, 카레처럼 속을 채워주는 메뉴.</div>
+    <div class="oh-guide-item"><b>금(金) 기운</b> — 알싸하고 깔끔한 맛. 칼국수, 만두, 초밥처럼 담백한 메뉴.</div>
+    <div class="oh-guide-item"><b>수(水) 기운</b> — 짭짤한 국물과 해산물. 해물탕, 라면, 회처럼 시원한 메뉴.</div>
+  </div>
+
+  <h2>자주 묻는 질문</h2>
+  <div class="faq-item">
+    <div class="faq-q">사주 메뉴는 어떻게 추천되나요?</div>
+    <div class="faq-a">생년월일로 년주와 일주를 뽑고, 오늘 날짜의 일진과 비교해요. 내 오행과 오늘 기운의 관계(상생·상극)에 지금 기분을 더해서 그날의 메뉴를 골라줘요.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">정말 무료인가요?</div>
+    <div class="faq-a">네, 모든 기능이 완전 무료예요. 로그인이나 결제 없이 바로 볼 수 있어요.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">생년월일 정보가 서버에 저장되나요?</div>
+    <div class="faq-a">아니요. 입력한 생년월일은 이 브라우저에만 저장돼서 다음 방문 때 자동으로 채워질 뿐, 밖으로 전송되지 않아요.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">음력 생일도 넣을 수 있나요?</div>
+    <div class="faq-a">네. 양력·음력 버튼으로 바꿔서 입력하면 자동으로 양력으로 변환해 계산해요(±1일 오차 가능).</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">궁합 메뉴는 무엇인가요?</div>
+    <div class="faq-a">두 사람의 생년월일을 넣으면 오행 궁합을 보고, 같이 먹으면 좋은 메뉴를 추천해줘요. 링크로 상대를 초대할 수도 있어요.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">밥값 내기는 어떻게 정해지나요?</div>
+    <div class="faq-a">여러 명의 생일을 넣으면 각자의 오늘 운세 점수를 계산해서, 가장 낮은(또는 높은) 사람이 밥값 주인공으로 뽑혀요. 그냥 재미로 즐겨주세요.</div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  오늘의 사주 메뉴 · <a href="https://sajumenu.com/">sajumenu.com</a><br>
+  사주는 사주일 뿐, 메뉴는 재미로만 골라보세요 🍚
+</footer>
 
 <script>
 // ── 음력 → 양력 변환 ──
@@ -1211,6 +1306,9 @@ function generate(){
 
   window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n🕰️ 끼니별 — 아침 ${meals[0].data.m} / 점심 ${meals[1].data.m} / 저녁 ${meals[2].data.m}\n\n⚠️ 오늘의 금기 메뉴: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
   window._kakaoText0=`🔮 오늘 나는 ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운! 사주로 알아본 오늘의 메뉴는 "${menuData.m}" 🍽️ 너의 메뉴는 뭘까?`;
+  // 이 결과를 바로 볼 수 있는 링크. 생일이 담겨 있어서 친구가 열면 자동으로 채워져요
+  window._shareLink0=`${location.origin}${location.pathname}?b=${y}.${m}.${d}`;
+  window._shareText+=`\n\n👉 나도 사주 메뉴 보기\n${window._shareLink0}`;
 
   // 다이어리에 자동 저장
   saveDiaryEntry(td,myOh,menuData.m,rd.label,rd.emoji);
@@ -1969,8 +2067,10 @@ if(window.Kakao && KAKAO_JS_KEY && !KAKAO_JS_KEY.startsWith('여기에') && !Kak
   Kakao.init(KAKAO_JS_KEY);
 }
 
-function shareKakao(text){
+function shareKakao(text, linkUrl){
   if(!text)return;
+  // 링크가 따로 없으면 기본 주소로 보낸다
+  const url=linkUrl||'https://sajumenu.com/';
   if(!window.Kakao || !Kakao.isInitialized()){
     alert('카카오톡 공유는 아직 설정 중이에요. 카카오 디벨로퍼스에서 JavaScript 키를 등록하면 사용할 수 있어요.');
     return;
@@ -1978,7 +2078,7 @@ function shareKakao(text){
   Kakao.Share.sendDefault({
     objectType:'text',
     text,
-    link:{mobileWebUrl:'https://sajumenu.com/',webUrl:'https://sajumenu.com/'}
+    link:{mobileWebUrl:url,webUrl:url}
   });
 }
 
@@ -2024,6 +2124,19 @@ function shareInvite(){
     const t=document.getElementById('cy2');
     if(t)t.scrollIntoView({behavior:'smooth',block:'center'});
   },400);
+})();
+
+// 공유 링크(?b=년.월.일)로 들어오면 "오늘 운세" 탭에 그 생년월일을 미리 채워준다
+(function handleBirthLink(){
+  const raw=new URLSearchParams(location.search).get('b');
+  if(!raw)return;
+  const [by,bm,bd]=raw.split('.').map(Number);
+  if(!by||!bm||!bd)return;
+  const ys=document.getElementById('byear'),ms=document.getElementById('bmonth'),ds=document.getElementById('bday');
+  if(!ys||!ms||!ds)return;
+  ys.value=by; ms.value=bm; ds.value=bd;
+  setCalType(0);   // 링크에 담긴 값은 양력 기준 (setCalType 안에서 미리보기도 새로고침돼요)
+  showTab(0);
 })();
 
 // ── 지역별 특색 메뉴 ──
