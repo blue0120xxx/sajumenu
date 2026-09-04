@@ -88,7 +88,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .star{position:absolute;border-radius:50%;background:var(--gold2);animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s)}
 @keyframes twinkle{0%,100%{opacity:.08}50%{opacity:.4}}
 .topbar{position:sticky;top:0;z-index:100;background:rgba(250,243,227,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;padding:12px 20px}
-.logo{font-family:'Noto Serif KR',serif;font-weight:900;font-size:14px;color:var(--tx)}
+.logo{font-family:'Noto Serif KR',serif;font-weight:900;font-size:14px;color:var(--tx);cursor:pointer}
+.logo:hover{opacity:.7}
 .logo small{display:block;font-size:9px;font-weight:400;color:var(--txm);letter-spacing:3px;text-transform:uppercase;font-family:'Noto Sans KR',sans-serif}
 .free-badge{background:#FBF0DA;border:1px solid var(--golddim);border-radius:20px;padding:4px 12px;font-size:10px;color:var(--gold);font-weight:700}
 .hero{text-align:center;padding:26px 20px 20px;position:relative;z-index:1}
@@ -434,7 +435,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="stars" id="stars"></div>
 
 <header class="topbar">
-  <div class="logo">오늘의 사주 메뉴<small>사주팔자 × 오행 × Food</small></div>
+  <div class="logo" onclick="goHome()" role="link" tabindex="0" title="홈으로">오늘의 사주 메뉴<small>사주팔자 × 오행 × Food</small></div>
   <div class="free-badge">✦ 완전 무료</div>
 </header>
 
@@ -1922,6 +1923,18 @@ function showTab(i){
   document.querySelectorAll('#sajuMode .tab-section').forEach((s,j)=>s.classList.toggle('active',i===j));
   if(i===3){renderDiary();if(diaryView===1)renderDex();}
 }
+
+// 왼쪽 위 로고를 누르면 처음 화면(사주메뉴 모드 · 오늘 운세 탭)으로 돌아간다
+function goHome(){
+  setMode(0);       // 사주메뉴 모드로
+  showTab(0);       // 첫 번째 탭(오늘 운세)으로
+}
+// 키보드로 로고에 포커스한 뒤 엔터/스페이스를 눌러도 홈으로 가게 해준다
+document.addEventListener('keydown',function(e){
+  if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.classList.contains('logo')){
+    e.preventDefault();goHome();
+  }
+});
 
 // ── 최상단 모드 전환: 사주 메뉴 ↔ 지역 메뉴 (서로 완전히 다른 코너) ──
 function setMode(m){
