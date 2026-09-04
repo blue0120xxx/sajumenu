@@ -408,6 +408,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .taste-cta .btn-kakao{flex:1}
 .taste-cross{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--gold);padding:12px;border:1px dashed var(--b2);border-radius:12px;cursor:pointer;text-decoration:none}
 .taste-cross:hover{background:#FBF0DA}
+/* ── 입맛 유형 5가지 설명 ── */
+.taste-types{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.tt-row{display:flex;gap:11px;padding:11px 12px;border:1px solid var(--b1);border-radius:12px;background:var(--s2);align-items:flex-start}
+.tt-row.is-me{border-color:var(--gold);background:#FBF0DA;box-shadow:var(--sh-sm)}
+.tt-emoji{font-size:22px;line-height:1.2;flex-shrink:0}
+.tt-body{flex:1;min-width:0}
+.tt-name{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:900}
+.tt-oh{font-size:10px;color:var(--txm);font-weight:600;margin-left:6px}
+.tt-me-tag{font-size:9px;font-weight:800;color:#fff;background:var(--gold);border-radius:6px;padding:2px 5px;margin-left:6px;vertical-align:middle}
+.tt-desc{font-size:11.5px;line-height:1.7;color:var(--txd);margin-top:3px}
 /* ── 날씨 연동 오늘의 메뉴 ── */
 .weather-card{max-width:540px;margin:0 auto 6px;padding:0 16px;position:relative;z-index:1}
 .weather-cta{width:100%;padding:12px;border:1px dashed var(--b2);border-radius:12px;background:var(--s1);color:var(--gold);font-family:'Noto Sans KR',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -775,6 +785,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <div class="slabel">🧪 음식 취향 테스트</div>
     <p class="region-intro">질문 10개에 답하면 <b>나의 입맛 오행 유형</b>과 어울리는 메뉴를 알려드려요. 생년월일 필요 없어요!</p>
     <button class="btn-go" onclick="startTaste()">✨ 테스트 시작하기</button>
+  </div>
+
+  <!-- 입맛 유형 5가지가 뭔지 미리(또는 결과 뒤에) 보여주는 카드. 내 유형이 나오면 노란색으로 표시됨 -->
+  <div class="input-card" id="tasteTypesCard">
+    <div class="slabel">🍽️ 입맛 유형은 이렇게 5가지예요</div>
+    <p class="region-intro">오행(목·화·토·금·수)을 음식 취향에 맞춰 우리가 재미로 만든 유형이에요. 어떤 유형이 있는지 먼저 살펴보세요.</p>
+    <div class="taste-types" id="tasteTypes"></div>
   </div>
 
   <div class="input-card" id="tasteQuiz" style="display:none">
@@ -1958,8 +1975,26 @@ const TASTE_TYPE=[
 let tasteAnswers=[]; // 각 질문에서 고른 오행 인덱스
 let tasteStep=0;
 
+// 입맛 유형 5가지 설명 카드를 그린다. myTop을 주면 그 유형을 노란색으로 강조한다
+function renderTasteTypes(myTop){
+  const box=document.getElementById('tasteTypes');
+  if(!box)return;
+  box.innerHTML=TASTE_TYPE.map((t,i)=>
+    `<div class="tt-row${i===myTop?' is-me':''}">`+
+      `<span class="tt-emoji">${OH_EMOJI[i]}</span>`+
+      `<div class="tt-body">`+
+        `<span class="tt-name" style="color:${OH_COLOR[i]}">${t.name}</span>`+
+        `<span class="tt-oh">${OH_NICK[i]} · ${OH_NAME[i]}(${OH_CHAR[i]})</span>`+
+        (i===myTop?`<span class="tt-me-tag">내 유형</span>`:``)+
+        `<div class="tt-desc">${t.desc}</div>`+
+      `</div>`+
+    `</div>`).join('');
+}
+renderTasteTypes(); // 페이지 열릴 때 미리 한 번 그려둔다
+
 function startTaste(){
   tasteAnswers=[];tasteStep=0;
+  renderTasteTypes(); // 다시 풀 땐 유형 강조를 초기화
   document.getElementById('tasteIntro').style.display='none';
   document.getElementById('tasteResult').classList.remove('show');
   document.getElementById('tasteQuiz').style.display='block';
@@ -2005,6 +2040,7 @@ function showTasteResult(){
   window._tasteKakao=`🧪 내 입맛 오행 유형은 "${t.name}"! 너의 입맛도 테스트해봐 🍽️`;
   window._tasteLink=`${location.origin}${location.pathname}?m=taste`;
   window._tasteShare=`🧪 나의 입맛 오행 유형: ${t.name} (${OH_NICK[top]}·${OH_NAME[top]})\n\n${t.desc}\n\n🍽️ 어울리는 메뉴: ${menus.map(m=>m.m).join(', ')}\n\n너의 입맛 유형은? 👉 ${window._tasteLink}\n#사주메뉴 #입맛테스트`;
+  renderTasteTypes(top); // 아래 유형 설명 카드에서 내 유형을 노란색으로 강조
   const rw=document.getElementById('tasteResult');
   rw.classList.add('show');
   staggerReveal('#tasteShareCard > *');
