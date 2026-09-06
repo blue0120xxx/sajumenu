@@ -1926,8 +1926,20 @@ function showTab(i){
 
 // 왼쪽 위 로고를 누르면 처음 화면(사주메뉴 모드 · 오늘 운세 탭)으로 돌아간다
 function goHome(){
+  // 지금까지 나온 결과 카드들을 모두 숨겨서 깨끗한 첫 화면으로 되돌린다
+  // (안 그러면 이미 첫 화면일 때 로고를 눌러도 아무 변화가 없어서 "반응 없음"처럼 보인다)
+  ['result','compatResult','payResult','tasteResult','myinfo'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.classList.remove('show');
+  });
+  // 입맛 테스트도 처음(소개) 화면으로 되돌린다
+  var ti=document.getElementById('tasteIntro'); if(ti)ti.style.display='block';
+  var tq=document.getElementById('tasteQuiz'); if(tq)tq.style.display='none';
+  var cf=document.getElementById('commForm'); if(cf)cf.style.display='none';
   setMode(0);       // 사주메뉴 모드로
   showTab(0);       // 첫 번째 탭(오늘 운세)으로
+  // 부드러운 스크롤을 지원 안 하는 폰에서도 확실히 맨 위로 올라가게 한다
+  try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
 }
 // 키보드로 로고에 포커스한 뒤 엔터/스페이스를 눌러도 홈으로 가게 해준다
 document.addEventListener('keydown',function(e){
