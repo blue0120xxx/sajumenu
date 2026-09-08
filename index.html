@@ -398,6 +398,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .payer-title.loser-mode{color:var(--red)}
 .payer-name{font-family:'Noto Serif KR',serif;font-size:26px;font-weight:900;color:var(--tx);margin-bottom:6px}
 .payer-reason{font-size:12px;color:var(--txd);line-height:1.7}
+/* 밥값 결과 '두구두구' 카운트다운 오버레이 */
+#payCountdown{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(43,33,24,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#payCountdown.on{display:flex}
+.pc-inner{text-align:center;color:#fff;padding:20px}
+.pc-label{font-family:'Noto Serif KR',serif;font-size:15px;letter-spacing:2px;margin-bottom:18px;opacity:.92}
+.pc-num{font-family:'Noto Serif KR',serif;font-size:92px;font-weight:900;line-height:1;color:#F5D98A}
+.pc-num.pop{animation:pcPop .6s cubic-bezier(.22,1,.36,1)}
+@keyframes pcPop{0%{transform:scale(.3);opacity:0}45%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes payerPop{0%{transform:scale(.7);opacity:0}55%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 /* ── 맨 아래 소개글 · 자주 묻는 질문 (검색 노출용 본문 텍스트) ── */
 .seo-section{max-width:540px;margin:6px auto 0;padding:0 16px 24px;position:relative;z-index:1}
 .seo-section h2{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:900;color:var(--tx);margin:24px 0 10px}
@@ -918,6 +927,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
   오늘의 사주 메뉴 · <a href="https://sajumenu.com/">sajumenu.com</a><br>
   사주는 사주일 뿐, 메뉴는 재미로만 골라보세요 🍚
 </footer>
+
+<!-- 밥값 결과 공개 전 두구두구 카운트다운 -->
+<div id="payCountdown" aria-hidden="true">
+  <div class="pc-inner">
+    <div class="pc-label">오늘의 밥값 주인공은…</div>
+    <div class="pc-num" id="pcNum">3</div>
+  </div>
+</div>
 
 <!-- 공유용 미니 카드 (평소엔 화면 밖에 숨겨둠. 4가지 모드가 같이 씀) -->
 <div id="miniShareWrap" aria-hidden="true">
@@ -1893,9 +1910,14 @@ function determinePayer(){
     `;
   });
 
-  document.getElementById('payResult').classList.add('show');
-  staggerReveal('#shareCard2 > *');
-  document.getElementById('payResult').scrollIntoView({behavior:'smooth',block:'nearest'});
+  // 두구두구 카운트다운(3·2·1·🥁) 후에 결과를 보여준다
+  runPayCountdown(()=>{
+    document.getElementById('payResult').classList.add('show');
+    staggerReveal('#shareCard2 > *');
+    document.getElementById('payResult').scrollIntoView({behavior:'smooth',block:'nearest'});
+    const an=document.getElementById('payerAnnounce');
+    if(an){an.style.animation='none';void an.offsetWidth;an.style.animation='payerPop .5s cubic-bezier(.22,1,.36,1)';}
+  });
 
   // 공유 텍스트
   const rankText=results.map((r,i)=>
@@ -1918,6 +1940,25 @@ function determinePayer(){
     scores:results.map((r,i)=>`${i+1}위 ${r.displayName} <b>${r.score}</b>`).join('<span style="color:#C9B78F">·</span>'),
     cta:'우리도 사주로 밥값 정하기 · sajumenu.com',
   });
+}
+
+// ── 밥값 결과를 '3·2·1·🥁' 카운트다운 뒤에 공개 ──
+function runPayCountdown(reveal){
+  const ov=document.getElementById('payCountdown');
+  const num=document.getElementById('pcNum');
+  // 오버레이가 없거나, 모션 최소화를 켠 사용자는 바로 결과
+  if(!ov||!num||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){reveal();return;}
+  const steps=['3','2','1','🥁'];
+  let i=0;
+  ov.classList.add('on');
+  const tick=()=>{
+    num.textContent=steps[i];
+    num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop');
+    i++;
+    if(i<steps.length)setTimeout(tick,650);
+    else setTimeout(()=>{ov.classList.remove('on');reveal();},650);
+  };
+  tick();
 }
 
 function copyPayResult(){
