@@ -122,6 +122,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .relation-badge{font-size:11px;color:var(--txd);text-align:center;margin-top:6px}
 /* 기분 */
 .mood-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+/* 결과 안에서 기분을 고쳐 넣는 영역 (입력 단계 마찰을 줄이려고 결과 뒤로 옮김) */
+.mood-refine{background:var(--s2);border:1px dashed var(--b2);border-radius:12px;padding:14px;margin-bottom:12px}
+.mood-refine-label{font-size:11px;font-weight:700;color:var(--txm);text-align:center;margin-bottom:10px}
+.mood-refine .mood-chips{margin-bottom:0}
 .mood-chip{background:var(--s2);border:1px solid var(--b2);color:var(--txd);font-size:12px;padding:9px 6px;border-radius:16px;cursor:pointer;transition:all .15s;user-select:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mood-chip:hover{border-color:var(--gold);color:var(--tx)}
 .mood-chip.active{background:var(--purpleg);border-color:var(--purple);color:var(--purple);font-weight:700}
@@ -542,15 +546,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <input class="date-input" type="date" id="tg0Date" onchange="onTarget0Change()">
     </div>
 
-    <div class="slabel" style="margin-bottom:10px">✦ 지금 기분 ✦</div>
-    <div class="mood-chips">
-      <div class="mood-chip active" data-v="0">😐 평범</div>
-      <div class="mood-chip" data-v="1">😴 피곤</div>
-      <div class="mood-chip" data-v="2">😄 신남</div>
-      <div class="mood-chip" data-v="3">😔 우울</div>
-      <div class="mood-chip" data-v="4">🤤 배고픔</div>
-      <div class="mood-chip" data-v="5">😤 스트레스</div>
-    </div>
     <button class="btn-go" onclick="generate()">✨ 오늘의 사주 메뉴 보기</button>
   </div>
 
@@ -567,6 +562,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
         <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 후기 보기</a>
       </div>
       <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
+    </div>
+    <!-- 지금 기분: 결과를 먼저 보여주고, 더 정확히 원하면 여기서 반영 -->
+    <div class="mood-refine">
+      <div class="mood-refine-label">지금 기분을 고르면 메뉴가 더 잘 맞아요</div>
+      <div class="mood-chips" id="moodChips">
+        <div class="mood-chip active" data-v="0">😐 평범</div>
+        <div class="mood-chip" data-v="1">😴 피곤</div>
+        <div class="mood-chip" data-v="2">😄 신남</div>
+        <div class="mood-chip" data-v="3">😔 우울</div>
+        <div class="mood-chip" data-v="4">🤤 배고픔</div>
+        <div class="mood-chip" data-v="5">😤 스트레스</div>
+      </div>
     </div>
     <!-- 배너 (사주 근거는 메뉴 아래 보조 정보로) -->
     <div class="saju-banner">
@@ -1290,7 +1297,13 @@ if(_streakToday.milestone){
 collectMenus(loadDiary().map(e=>e.menu));
 
 let state=null,moodIdx=0;
-document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{document.querySelectorAll('.mood-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');moodIdx=parseInt(c.dataset.v)})});
+document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{
+  document.querySelectorAll('.mood-chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  moodIdx=parseInt(c.dataset.v);
+  // 이미 결과가 떠 있으면 바뀐 기분으로 그 자리에서 바로 다시 뽑는다
+  if(document.getElementById('result').classList.contains('show'))generate(true);
+})});
 
 // ── 조회 날짜(오늘/미래 지정) — 개인 운세 탭 ──
 let targetMode0=0;
@@ -1383,7 +1396,7 @@ if(savedBirth&&savedBirth.cal===1)setCalType(1);else setCalType(0);
 
 function onTarget0Change(){updateInfo()}
 
-function generate(){
+function generate(isRefine){
   if(!state){alert('생년월일을 먼저 입력해주세요.');return}
   const {y,m,d,yp,dp,tdp,myOh,todayOh,rel,td}=state;
   const calLabel=calType===1?' (음력→양력)':'';
@@ -1489,8 +1502,11 @@ function generate(){
   setTimeout(()=>document.querySelectorAll('.score-bar').forEach(b=>b.style.width=b.dataset.w),150);
 
   document.getElementById('result').classList.add('show');
-  staggerReveal('#shareCard0 > *');
-  document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+  // 기분만 바꿔 다시 뽑는 경우엔 등장 애니메이션·스크롤을 생략해 화면이 튀지 않게 한다
+  if(!isRefine){
+    staggerReveal('#shareCard0 > *');
+    document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
 
   // ── 공유용 미니 카드 채우기 (이미지 저장 버튼이 이걸 그림으로 만든다) ──
   fillMiniCard({
