@@ -463,6 +463,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .taste-types{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .tt-row{display:flex;gap:11px;padding:11px 12px;border:1px solid var(--b1);border-radius:12px;background:var(--s2);align-items:flex-start}
 .tt-row.is-me{border-color:var(--gold);background:#FBF0DA;box-shadow:var(--sh-sm)}
+.tt-row.tt-hidden{border-style:dashed;background:var(--bg)}
 .tt-emoji{font-size:22px;line-height:1.2;flex-shrink:0}
 .tt-body{flex:1;min-width:0}
 .tt-name{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:900}
@@ -848,15 +849,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="main">
   <div class="input-card" id="tasteIntro">
     <div class="slabel">🧪 음식 취향 테스트</div>
-    <p class="region-intro">질문 10개에 답하면 <b>나의 입맛 오행 유형</b>과 어울리는 메뉴를 알려드려요. 생년월일 필요 없어요!</p>
+    <p class="region-intro">질문 <b>12개</b>에 답하면 <b>나의 입맛 유형</b>과 어울리는 메뉴를 알려드려요. 생년월일 필요 없고, 할 때마다 질문이 바뀌어요!</p>
     <button class="btn-go" onclick="startTaste()">✨ 테스트 시작하기</button>
-  </div>
-
-  <!-- 입맛 유형 5가지가 뭔지 미리(또는 결과 뒤에) 보여주는 카드. 내 유형이 나오면 노란색으로 표시됨 -->
-  <div class="input-card" id="tasteTypesCard">
-    <div class="slabel">🍽️ 입맛 유형은 이렇게 5가지예요</div>
-    <p class="region-intro">오행(목·화·토·금·수)을 음식 취향에 맞춰 우리가 재미로 만든 유형이에요. 어떤 유형이 있는지 먼저 살펴보세요.</p>
-    <div class="taste-types" id="tasteTypes"></div>
   </div>
 
   <div class="input-card" id="tasteQuiz" style="display:none">
@@ -883,6 +877,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <button class="btn-retry" onclick="startTaste()">🔄 다시</button>
     </div>
     <a class="taste-cross" onclick="setMode(0)">🔮 생년월일로 진짜 내 사주 메뉴도 보기 →</a>
+  </div>
+
+  <!-- 입맛 유형 목록. 테스트 전엔 미리보기, 결과 뒤엔 내 유형이 노란색으로 강조됨 -->
+  <div class="input-card" id="tasteTypesCard">
+    <div class="slabel">🍽️ 입맛 유형 한눈에 보기</div>
+    <p class="region-intro">오행(목·화·토·금·수)을 음식 취향에 맞춰 재미로 만든 유형이에요. 답변 성향이 특이하면 숨은 유형도 나와요.</p>
+    <div class="taste-types" id="tasteTypes"></div>
   </div>
 </div>
 </div><!-- /tasteMode -->
@@ -2140,7 +2141,7 @@ function setMode(m){
     sub.innerHTML='관광 메뉴 말고, 그 지역 사람들이<br>즐겨 먹는 로컬 메뉴로 골라드려요';
   }else if(m===2){
     orb.textContent='🧪';
-    title.innerHTML='질문 10개로 알아보는<br><span class="gold-txt">나의 입맛 오행 유형</span>';
+    title.innerHTML='질문 12개로 알아보는<br><span class="gold-txt">나의 입맛 유형</span>';
     sub.innerHTML='생년월일 없이, 음식 취향만으로<br>어울리는 메뉴를 찾아드려요';
   }else{
     orb.textContent='🍚';
@@ -2150,8 +2151,8 @@ function setMode(m){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ===== 입맛 오행 테스트 (생년월일 없이 즐기는 코너) =====
-// 각 보기는 오행 하나에 1점씩 준다. 오행별로 정확히 4점씩 나오게 균형을 맞춰둠.
+// ===== 입맛 테스트 (생년월일 없이 즐기는 코너) =====
+// 각 보기는 오행 하나에 1점씩 준다. 아래 풀에서 매번 12개를 무작위로 뽑아 물어본다.
 const TASTE_Q=[
   {q:'국물 요리 중에 더 끌리는 건?',a:[['뜨끈한 곰탕·설렁탕 한 그릇',4],['깔끔한 칼국수·잔치국수',3]]},
   {q:'솔직히 나는…',a:[['라면·국수류를 자주 찾는다',4],['그래도 밥심, 밥이 있어야 한다',2]]},
@@ -2161,9 +2162,23 @@ const TASTE_Q=[
   {q:'밥 먹을 때 나는',a:[['혼밥도 완전 편하다',4],['다 같이 먹어야 제맛이다',1]]},
   {q:'식사 후에',a:[['디저트는 꼭 챙긴다',2],['디저트 없이 식사로 끝낸다',3]]},
   {q:'회·조개·해산물은?',a:[['완전 좋아, 보이면 무조건',4],['별로… 육지 음식이 낫다',0]]},
-  {q:'더 끌리는 맛은',a:[['새콤한 맛',0],['칼칼하고 얼큰한 맛',1]]},
+  {q:'더 끌리는 맛은?',a:[['새콤한 맛',0],['칼칼하고 얼큰한 맛',1]]},
   {q:'먹는 장소는',a:[['분위기·플레이팅도 맛의 일부',1],['맛만 있으면 허름해도 OK',3]]},
+  {q:'배달 시킬 때 최애는?',a:[['얼큰한 국물 요리(찌개·짬뽕)',1],['깔끔한 초밥·샐러드',3]]},
+  {q:'여행 가면 꼭 먹는 건?',a:[['그 지역 유명한 국밥·국수',2],['안 먹어본 향토 음식·별미',0]]},
+  {q:'라면을 끓이면 나는?',a:[['국물 넉넉하게, 밥까지 말아먹는다',4],['면 위주로 꼬들하게',3]]},
+  {q:'엄청 매운 메뉴를 보면?',a:[['도전 정신이 불타오른다',1],['적당히… 물 떠놓고 먹는다',2]]},
+  {q:'샐러드바가 있으면?',a:[['제일 먼저 채소부터 담는다',0],['고기·튀김 코너로 직행',1]]},
+  {q:'점심 메뉴가 안 정해지면?',a:[['늘 먹던 걸로 안전하게',2],['눈에 띄는 새 가게로 일단 들어간다',0]]},
+  {q:'혼자 밥 먹을 때?',a:[['국물 요리 하나 시켜 여유롭게',4],['후딱 먹을 수 있는 간단한 걸로',3]]},
+  {q:'디저트 카페에서 나는?',a:[['달달한 케이크·타르트 꼭 먹는다',2],['커피만, 단 건 별로',3]]},
+  {q:'친구가 "아무거나"라고 하면?',a:[['내가 신나서 매운 맛집 고른다',1],['다 같이 무난한 데로 정리한다',2]]},
+  {q:'해장은 어떻게?',a:[['뜨끈한 국물(콩나물국밥·해장국)',4],['상큼하게(과일·물냉면)',0]]},
+  {q:'뷔페에 가면?',a:[['회·조개 코너를 제일 많이 간다',4],['그날 계획한 만큼만 딱 먹는다',3]]},
+  {q:'좋아하는 국물 온도는?',a:[['펄펄 끓는 뚝배기, 후후 불어 먹는 맛',1],['적당히 식은 담백한 맑은 국물',3]]},
 ];
+const TASTE_TAKE=12; // 매번 물어보는 질문 수
+
 const TASTE_TYPE=[
   {name:'새콤상큼파',tag:'처음 보는 메뉴에 먼저 손이 가는 미식 탐험가',desc:'늘 새로운 걸 찾아 떠나는 입맛이에요. 상큼하고 가벼운 맛, 처음 보는 메뉴에 먼저 손이 가는 모험가형. 냉면·나물비빔밥·물회처럼 산뜻한 한 그릇이 잘 맞아요.'},
   {name:'화끈매콤파',tag:'매운맛으로 스트레스를 태우는 폭주기관차',desc:'맵고 뜨거운 걸로 스트레스를 날리는 타입. 분위기 좋은 곳에서 왁자지껄 같이 먹을 때 제일 맛있죠. 떡볶이·마라탕·불닭이 당신의 소울푸드예요.'},
@@ -2171,22 +2186,60 @@ const TASTE_TYPE=[
   {name:'깔끔담백파',tag:'군더더기 없는 한 그릇을 사랑하는 미니멀리스트',desc:'메뉴는 미리 딱 정하고, 군더더기 없는 깔끔한 맛을 좋아해요. 분위기보다 "맛 그 자체". 칼국수·만두·초밥처럼 정갈한 메뉴가 취향에 맞아요.'},
   {name:'국물해산물파',tag:'국물 없으면 허전한 바다 사랑꾼',desc:'국물 없으면 허전하고, 회·조개 앞에선 무장해제. 혼밥도 즐길 줄 아는 여유파. 해물탕·곰탕·라면처럼 뜨끈하거나 바다 향 나는 메뉴가 정답이에요.'},
 ];
-let tasteAnswers=[]; // 각 질문에서 고른 오행 인덱스
-let tasteStep=0;
 
-// 입맛 유형 5가지 설명 카드를 그린다. myTop을 주면 그 유형을 노란색으로 강조한다
-function renderTasteTypes(myTop){
+// 답변 성향이 특이할 때만 나오는 '숨은 유형'. test(score[5], top, sortedIdx) 가 참이면 채택
+const TASTE_SPECIAL=[
+  {
+    key:'solo', name:'외길 미식파', emoji:'🎯', color:'#B8412E',
+    tag:'한 우물만 깊게 파는 확고한 입맛',
+    desc:'취향이 아주 뚜렷해서, 좋아하는 스타일이면 매일 먹어도 안 질리는 타입이에요. 새로운 시도는 잘 안 하지만 "이건 여기가 최고"라는 자기만의 리스트가 확실하죠.',
+    menus:[{m:'단골집 시그니처 메뉴',s:'매일 먹어도 안 질리는 나만의 원픽'},{m:'평양냉면',s:'알수록 빠지는 담백함의 세계'},{m:'라멘',s:'가게마다 국물을 비교하는 재미'}],
+    synergy:'비슷한 취향의 사람을 만나면 단골집을 공유하며 급속도로 친해져요.',
+    test:(s,top)=>s[top]>=Math.ceil(TASTE_TAKE*0.6),
+  },
+  {
+    key:'omni', name:'잡식 만능파', emoji:'🍱', color:'#8A6D3B',
+    tag:'가리는 것 없이 다 잘 먹는 무적의 입맛',
+    desc:'특정 취향에 치우치지 않고 뭐든 골고루 즐기는 타입이에요. 메뉴 고를 때 제일 편한 사람이지만, 정작 "먹고 싶은 거" 하나를 못 정해서 고민이 길어지죠.',
+    menus:[{m:'제육덮밥',s:'실패 없는 국민 점심'},{m:'김치찌개',s:'언제 먹어도 옳은 기본기'},{m:'비빔밥',s:'골고루 다 들어간 한 그릇'}],
+    synergy:'까다로운 입맛의 친구와도 잘 맞아요. 상대에 맞춰 메뉴를 정해줄 수 있는 유일한 타입이거든요.',
+    test:(s)=>Math.max(...s)-Math.min(...s)<=1,
+  },
+  {
+    key:'reversal', name:'반전 입맛파', emoji:'🎭', color:'#5B4E8C',
+    tag:'상반된 취향이 공존하는 종잡을 수 없는 입맛',
+    desc:'매운 걸 좋아하다가도 갑자기 담백한 게 당기고, 새로운 걸 찾다가도 단골집만 가는… 그날그날 완전히 다른 입맛이에요. 같이 먹는 사람은 헷갈리지만 본인은 그게 제일 자연스럽죠.',
+    menus:[{m:'마라탕',s:'맵기와 재료를 그날 기분대로'},{m:'로제 파스타',s:'매콤함과 부드러움 사이 어딘가'},{m:'물냉면',s:'얼큰한 걸 먹다가도 갑자기 생각나는'}],
+    synergy:'"오늘은 뭐 당겨?"라고 먼저 물어봐 주는 사람과 잘 맞아요.',
+    test:(s,top,order)=>s[order[0]]===s[order[1]] && (CTRL[order[0]]===order[1]||CTRL[order[1]]===order[0]),
+  },
+];
+
+let tasteAnswers=[];   // 각 질문에서 고른 오행 인덱스
+let tasteStep=0;
+let tasteQuestions=[]; // 이번 판에 뽑힌 질문 12개
+function shuffled(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// 입맛 유형 목록(오행 5 + 숨은 유형 3)을 그린다. myKey(오행 인덱스 또는 숨은 유형 key)를 주면 강조한다
+function renderTasteTypes(myKey){
   const box=document.getElementById('tasteTypes');
   if(!box)return;
-  box.innerHTML=TASTE_TYPE.map((t,i)=>
-    `<div class="tt-row${i===myTop?' is-me':''}">`+
-      `<span class="tt-emoji">${OH_EMOJI[i]}</span>`+
+  const rows=TASTE_TYPE.map((t,i)=>({
+    me:i===myKey,hidden:false,emoji:OH_EMOJI[i],color:OH_COLOR[i],name:t.name,
+    sub:`${OH_NICK[i]} · ${OH_NAME[i]}(${OH_CHAR[i]})`,tag:t.tag,desc:t.desc,
+  })).concat(TASTE_SPECIAL.map(sp=>({
+    me:sp.key===myKey,hidden:true,emoji:sp.emoji,color:sp.color,name:sp.name,
+    sub:'숨은 유형',tag:sp.tag,desc:sp.desc,
+  })));
+  box.innerHTML=rows.map(r=>
+    `<div class="tt-row${r.me?' is-me':''}${r.hidden?' tt-hidden':''}">`+
+      `<span class="tt-emoji">${r.emoji}</span>`+
       `<div class="tt-body">`+
-        `<span class="tt-name" style="color:${OH_COLOR[i]}">${t.name}</span>`+
-        `<span class="tt-oh">${OH_NICK[i]} · ${OH_NAME[i]}(${OH_CHAR[i]})</span>`+
-        (i===myTop?`<span class="tt-me-tag">내 유형</span>`:``)+
-        `<div class="tt-tag">“${t.tag}”</div>`+
-        `<div class="tt-desc">${t.desc}</div>`+
+        `<span class="tt-name" style="color:${r.color}">${r.name}</span>`+
+        `<span class="tt-oh">${r.sub}</span>`+
+        (r.me?`<span class="tt-me-tag">내 유형</span>`:``)+
+        `<div class="tt-tag">“${r.tag}”</div>`+
+        `<div class="tt-desc">${r.desc}</div>`+
       `</div>`+
     `</div>`).join('');
 }
@@ -2194,6 +2247,7 @@ renderTasteTypes(); // 페이지 열릴 때 미리 한 번 그려둔다
 
 function startTaste(){
   tasteAnswers=[];tasteStep=0;
+  tasteQuestions=shuffled(TASTE_Q).slice(0,TASTE_TAKE); // 매번 새로 12개 뽑기
   renderTasteTypes(); // 다시 풀 땐 유형 강조를 초기화
   document.getElementById('tasteIntro').style.display='none';
   document.getElementById('tasteResult').classList.remove('show');
@@ -2202,9 +2256,9 @@ function startTaste(){
   document.getElementById('tasteQuiz').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderTasteQ(){
-  const item=TASTE_Q[tasteStep];
-  document.getElementById('tasteBar').style.width=(tasteStep/TASTE_Q.length*100)+'%';
-  document.getElementById('tasteQNum').textContent=`Q${tasteStep+1} / ${TASTE_Q.length}`;
+  const item=tasteQuestions[tasteStep];
+  document.getElementById('tasteBar').style.width=(tasteStep/tasteQuestions.length*100)+'%';
+  document.getElementById('tasteQNum').textContent=`Q${tasteStep+1} / ${tasteQuestions.length}`;
   document.getElementById('tasteQ').textContent=item.q;
   document.getElementById('tasteOpts').innerHTML=item.a.map(opt=>
     `<button class="taste-opt" onclick="tastePick(${opt[1]})">${_esc(opt[0])}</button>`).join('');
@@ -2212,7 +2266,7 @@ function renderTasteQ(){
 }
 function tastePick(oh){
   tasteAnswers[tasteStep]=oh;
-  if(tasteStep<TASTE_Q.length-1){tasteStep++;renderTasteQ();}
+  if(tasteStep<tasteQuestions.length-1){tasteStep++;renderTasteQ();}
   else showTasteResult();
 }
 function tastePrev(){
@@ -2222,42 +2276,57 @@ function showTasteResult(){
   const score=[0,0,0,0,0];
   tasteAnswers.forEach(oh=>score[oh]++);
   let top=0;score.forEach((v,i)=>{if(v>score[top])top=i;});
-  const t=TASTE_TYPE[top],c=OH_COLOR[top];
+  const order=[0,1,2,3,4].sort((a,b)=>score[b]-score[a]); // 점수 높은 순 오행 인덱스
+
+  // 답변 성향이 특이하면 숨은 유형, 아니면 기본 오행 유형
+  const sp=TASTE_SPECIAL.find(x=>x.test(score,top,order));
+  let res;
+  if(sp){
+    res={key:sp.key,name:sp.name,tag:sp.tag,desc:sp.desc,emoji:sp.emoji,color:sp.color,
+      sub:`${OH_NICK[top]}(${OH_NAME[top]}·${OH_CHAR[top]}) 성향이 가장 강해요`,
+      menus:sp.menus,synergy:sp.synergy};
+  }else{
+    const t=TASTE_TYPE[top],syn=GEN[top];
+    res={key:top,name:t.name,tag:t.tag,desc:t.desc,emoji:OH_EMOJI[top],color:OH_COLOR[top],
+      sub:`${OH_NICK[top]} · ${OH_NAME[top]}(${OH_CHAR[top]}) 입맛`,
+      menus:OH_MENUS[top][0],
+      synergy:`${TASTE_TYPE[syn].name}(${OH_NICK[syn]}) 입맛과 잘 통해요. 같이 가면 메뉴 정하기가 훨씬 수월해요!`};
+  }
+
   document.getElementById('tasteQuiz').style.display='none';
+  const c=res.color;
   const hero=document.getElementById('tasteHero');
   hero.style.cssText=`background:linear-gradient(160deg,${c}1f,${c}0a);border:1px solid ${c}55`;
   hero.innerHTML=
-    `<div class="th-emoji">${OH_EMOJI[top]}</div>`+
-    `<div class="th-type" style="color:${c}">${t.name}</div>`+
-    `<div class="th-tag">“${t.tag}”</div>`+
-    `<div class="th-sub">${OH_NICK[top]} · ${OH_NAME[top]}(${OH_CHAR[top]}) 입맛</div>`+
-    `<div class="th-desc">${t.desc}</div>`;
-  const menus=OH_MENUS[top][0]; // '평범' 기분 그룹의 메뉴 3개
-  document.getElementById('tasteMenus').innerHTML=menus.map(m=>
+    `<div class="th-emoji">${res.emoji}</div>`+
+    `<div class="th-type" style="color:${c}">${res.name}</div>`+
+    `<div class="th-tag">“${res.tag}”</div>`+
+    `<div class="th-sub">${res.sub}</div>`+
+    `<div class="th-desc">${res.desc}</div>`;
+  document.getElementById('tasteMenus').innerHTML=res.menus.map(m=>
     `<div class="taste-menu-item"><span class="tm-name">${_esc(m.m)}</span><span class="tm-sub">${_esc(m.s)}</span></div>`).join('');
-  const syn=GEN[top]; // 상생(나를 살려주는) 오행
-  document.getElementById('tasteSynergy').textContent=
-    `${TASTE_TYPE[syn].name}(${OH_NICK[syn]}) 입맛과 잘 통해요. 같이 가면 메뉴 정하기가 훨씬 수월해요!`;
+  document.getElementById('tasteSynergy').textContent=res.synergy;
+
   window._tasteLink=`${location.origin}${location.pathname}?m=taste`;
-  window._tasteKakao=`🧪 내 입맛 오행 유형은 "${t.name}" — ${t.tag}! 너의 입맛도 테스트해봐 🍽️`;
-  window._tasteShare=`🧪 나의 입맛 오행 유형: ${t.name} (${OH_NICK[top]}·${OH_NAME[top]})\n"${t.tag}"\n\n${t.desc}\n\n🍽️ 어울리는 메뉴: ${menus.map(m=>m.m).join(', ')}\n\n너의 입맛 유형은? 👉 ${window._tasteLink}\n#사주메뉴 #입맛테스트`;
+  window._tasteKakao=`🧪 내 입맛 유형은 "${res.name}" — ${res.tag}! 너의 입맛도 테스트해봐 🍽️`;
+  window._tasteShare=`🧪 나의 입맛 유형: ${res.name}\n"${res.tag}"\n\n${res.desc}\n\n🍽️ 어울리는 메뉴: ${res.menus.map(m=>m.m).join(', ')}\n\n너의 입맛 유형은? 👉 ${window._tasteLink}\n#사주메뉴 #입맛테스트`;
 
   // 공유용 미니 카드 채우기
   fillMiniCard({
-    brand:'입맛 오행 테스트',
+    brand:'입맛 테스트',
     date:null,
-    emoji:OH_EMOJI[top],
-    sub2:`${OH_NICK[top]} · ${OH_NAME[top]}(${OH_CHAR[top]}) 입맛`,
-    eyebrow:'내 입맛 오행 유형',
-    big:t.name,
-    sub:'“'+t.tag+'”',
+    emoji:res.emoji,
+    sub2:res.sub,
+    eyebrow:'내 입맛 유형',
+    big:res.name,
+    sub:'“'+res.tag+'”',
     rel:null,
     accent:c,
-    scores:`어울리는 메뉴 &nbsp;<b>${menus.map(m=>m.m).join(' · ')}</b>`,
+    scores:`어울리는 메뉴 &nbsp;<b>${res.menus.map(m=>m.m).join(' · ')}</b>`,
     cta:'너의 입맛 유형은? · sajumenu.com',
   });
 
-  renderTasteTypes(top); // 아래 유형 설명 카드에서 내 유형을 노란색으로 강조
+  renderTasteTypes(res.key); // 아래 목록에서 내 유형 강조
   const rw=document.getElementById('tasteResult');
   rw.classList.add('show');
   staggerReveal('#tasteShareCard > *');
