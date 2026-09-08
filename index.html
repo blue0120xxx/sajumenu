@@ -442,6 +442,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .taste-hero{text-align:center;padding:24px 20px;border-radius:16px;margin-bottom:12px;box-shadow:var(--sh-md)}
 .taste-hero .th-emoji{font-size:44px;line-height:1}
 .taste-hero .th-type{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:900;margin:8px 0 2px}
+.taste-hero .th-tag{font-size:13px;font-weight:700;color:var(--tx);margin:2px 0 6px;word-break:keep-all}
 .taste-hero .th-sub{font-size:11px;opacity:.7;letter-spacing:1px;margin-bottom:12px}
 .taste-hero .th-desc{font-size:12.5px;line-height:1.8;color:var(--txd);text-align:left}
 .taste-menus{display:flex;flex-direction:column;gap:8px}
@@ -462,6 +463,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .tt-name{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:900}
 .tt-oh{font-size:10px;color:var(--txm);font-weight:600;margin-left:6px}
 .tt-me-tag{font-size:9px;font-weight:800;color:#fff;background:var(--gold);border-radius:6px;padding:2px 5px;margin-left:6px;vertical-align:middle}
+.tt-tag{font-size:11.5px;font-weight:700;color:var(--tx);margin-top:4px;word-break:keep-all}
 .tt-desc{font-size:11.5px;line-height:1.7;color:var(--txd);margin-top:3px}
 /* ── 날씨 연동 오늘의 메뉴 ── */
 .weather-card{max-width:540px;margin:0 auto 6px;padding:0 16px;position:relative;z-index:1}
@@ -2145,11 +2147,11 @@ const TASTE_Q=[
   {q:'먹는 장소는',a:[['분위기·플레이팅도 맛의 일부',1],['맛만 있으면 허름해도 OK',3]]},
 ];
 const TASTE_TYPE=[
-  {name:'새콤상큼파',desc:'늘 새로운 걸 찾아 떠나는 입맛이에요. 상큼하고 가벼운 맛, 처음 보는 메뉴에 먼저 손이 가는 모험가형. 냉면·나물비빔밥·물회처럼 산뜻한 한 그릇이 잘 맞아요.'},
-  {name:'화끈매콤파',desc:'맵고 뜨거운 걸로 스트레스를 날리는 타입. 분위기 좋은 곳에서 왁자지껄 같이 먹을 때 제일 맛있죠. 떡볶이·마라탕·불닭이 당신의 소울푸드예요.'},
-  {name:'든든한상파',desc:'뭘 먹든 "든든하게"가 1순위. 검증된 단골집, 밥심 되는 한 그릇, 달달한 디저트 마무리까지 챙기는 안정형. 국밥·된장찌개·제육덮밥이 당신을 배신하지 않아요.'},
-  {name:'깔끔담백파',desc:'메뉴는 미리 딱 정하고, 군더더기 없는 깔끔한 맛을 좋아해요. 분위기보다 "맛 그 자체". 칼국수·만두·초밥처럼 정갈한 메뉴가 취향에 맞아요.'},
-  {name:'국물해산물파',desc:'국물 없으면 허전하고, 회·조개 앞에선 무장해제. 혼밥도 즐길 줄 아는 여유파. 해물탕·곰탕·라면처럼 뜨끈하거나 바다 향 나는 메뉴가 정답이에요.'},
+  {name:'새콤상큼파',tag:'처음 보는 메뉴에 먼저 손이 가는 미식 탐험가',desc:'늘 새로운 걸 찾아 떠나는 입맛이에요. 상큼하고 가벼운 맛, 처음 보는 메뉴에 먼저 손이 가는 모험가형. 냉면·나물비빔밥·물회처럼 산뜻한 한 그릇이 잘 맞아요.'},
+  {name:'화끈매콤파',tag:'매운맛으로 스트레스를 태우는 폭주기관차',desc:'맵고 뜨거운 걸로 스트레스를 날리는 타입. 분위기 좋은 곳에서 왁자지껄 같이 먹을 때 제일 맛있죠. 떡볶이·마라탕·불닭이 당신의 소울푸드예요.'},
+  {name:'든든한상파',tag:'뭘 먹든 "든든하게"가 1순위인 밥심 수호자',desc:'뭘 먹든 "든든하게"가 1순위. 검증된 단골집, 밥심 되는 한 그릇, 달달한 디저트 마무리까지 챙기는 안정형. 국밥·된장찌개·제육덮밥이 당신을 배신하지 않아요.'},
+  {name:'깔끔담백파',tag:'군더더기 없는 한 그릇을 사랑하는 미니멀리스트',desc:'메뉴는 미리 딱 정하고, 군더더기 없는 깔끔한 맛을 좋아해요. 분위기보다 "맛 그 자체". 칼국수·만두·초밥처럼 정갈한 메뉴가 취향에 맞아요.'},
+  {name:'국물해산물파',tag:'국물 없으면 허전한 바다 사랑꾼',desc:'국물 없으면 허전하고, 회·조개 앞에선 무장해제. 혼밥도 즐길 줄 아는 여유파. 해물탕·곰탕·라면처럼 뜨끈하거나 바다 향 나는 메뉴가 정답이에요.'},
 ];
 let tasteAnswers=[]; // 각 질문에서 고른 오행 인덱스
 let tasteStep=0;
@@ -2165,6 +2167,7 @@ function renderTasteTypes(myTop){
         `<span class="tt-name" style="color:${OH_COLOR[i]}">${t.name}</span>`+
         `<span class="tt-oh">${OH_NICK[i]} · ${OH_NAME[i]}(${OH_CHAR[i]})</span>`+
         (i===myTop?`<span class="tt-me-tag">내 유형</span>`:``)+
+        `<div class="tt-tag">“${t.tag}”</div>`+
         `<div class="tt-desc">${t.desc}</div>`+
       `</div>`+
     `</div>`).join('');
@@ -2208,6 +2211,7 @@ function showTasteResult(){
   hero.innerHTML=
     `<div class="th-emoji">${OH_EMOJI[top]}</div>`+
     `<div class="th-type" style="color:${c}">${t.name}</div>`+
+    `<div class="th-tag">“${t.tag}”</div>`+
     `<div class="th-sub">${OH_NICK[top]} · ${OH_NAME[top]}(${OH_CHAR[top]}) 입맛</div>`+
     `<div class="th-desc">${t.desc}</div>`;
   const menus=OH_MENUS[top][0]; // '평범' 기분 그룹의 메뉴 3개
@@ -2216,9 +2220,9 @@ function showTasteResult(){
   const syn=GEN[top]; // 상생(나를 살려주는) 오행
   document.getElementById('tasteSynergy').textContent=
     `${TASTE_TYPE[syn].name}(${OH_NICK[syn]}) 입맛과 잘 통해요. 같이 가면 메뉴 정하기가 훨씬 수월해요!`;
-  window._tasteKakao=`🧪 내 입맛 오행 유형은 "${t.name}"! 너의 입맛도 테스트해봐 🍽️`;
   window._tasteLink=`${location.origin}${location.pathname}?m=taste`;
-  window._tasteShare=`🧪 나의 입맛 오행 유형: ${t.name} (${OH_NICK[top]}·${OH_NAME[top]})\n\n${t.desc}\n\n🍽️ 어울리는 메뉴: ${menus.map(m=>m.m).join(', ')}\n\n너의 입맛 유형은? 👉 ${window._tasteLink}\n#사주메뉴 #입맛테스트`;
+  window._tasteKakao=`🧪 내 입맛 오행 유형은 "${t.name}" — ${t.tag}! 너의 입맛도 테스트해봐 🍽️`;
+  window._tasteShare=`🧪 나의 입맛 오행 유형: ${t.name} (${OH_NICK[top]}·${OH_NAME[top]})\n"${t.tag}"\n\n${t.desc}\n\n🍽️ 어울리는 메뉴: ${menus.map(m=>m.m).join(', ')}\n\n너의 입맛 유형은? 👉 ${window._tasteLink}\n#사주메뉴 #입맛테스트`;
 
   // 공유용 미니 카드 채우기
   fillMiniCard({
@@ -2228,7 +2232,7 @@ function showTasteResult(){
     sub2:`${OH_NICK[top]} · ${OH_NAME[top]}(${OH_CHAR[top]}) 입맛`,
     eyebrow:'내 입맛 오행 유형',
     big:t.name,
-    sub:t.desc,
+    sub:'“'+t.tag+'”',
     rel:null,
     accent:c,
     scores:`어울리는 메뉴 &nbsp;<b>${menus.map(m=>m.m).join(' · ')}</b>`,
