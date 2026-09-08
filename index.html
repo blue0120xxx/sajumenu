@@ -494,8 +494,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 
 <section class="hero">
   <div class="orb" id="heroOrb">🍚</div>
-  <h1 id="heroTitle">사주팔자로 분석하는<br><span class="gold-txt">오늘의 내 메뉴</span></h1>
-  <p class="hero-sub" id="heroSub">생년월일만 입력하면 나의 오행 기운에 맞는<br>오늘의 메뉴를 알려드려요</p>
+  <h1 id="heroTitle">오늘 뭐 먹지?<br><span class="gold-txt">사주가 딱 하나 골라드려요</span></h1>
+  <p class="hero-sub" id="heroSub">생년월일만 넣으면 나의 오행 기운으로<br>오늘 먹을 메뉴를 정해드려요</p>
 </section>
 
 <!-- 날씨 연동 오늘의 메뉴 (위치를 허용하면 지금 날씨에 맞는 메뉴를 보여줘요) -->
@@ -548,7 +548,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <input class="date-input" type="date" id="tg0Date" onchange="onTarget0Change()">
     </div>
 
-    <button class="btn-go" onclick="generate()">✨ 오늘의 사주 메뉴 보기</button>
+    <button class="btn-go" onclick="generate()">🍚 오늘 먹을 메뉴 뽑기</button>
   </div>
 
   <div class="result-wrap" id="result">
@@ -2130,8 +2130,8 @@ function setMode(m){
     sub.innerHTML='생년월일 없이, 음식 취향만으로<br>어울리는 메뉴를 찾아드려요';
   }else{
     orb.textContent='🍚';
-    title.innerHTML='사주팔자로 분석하는<br><span class="gold-txt">오늘의 내 메뉴</span>';
-    sub.innerHTML='생년월일만 입력하면 나의 오행 기운에 맞는<br>오늘의 메뉴를 알려드려요';
+    title.innerHTML='오늘 뭐 먹지?<br><span class="gold-txt">사주가 딱 하나 골라드려요</span>';
+    sub.innerHTML='생년월일만 넣으면 나의 오행 기운으로<br>오늘 먹을 메뉴를 정해드려요';
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
