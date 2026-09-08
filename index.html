@@ -178,6 +178,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .menu-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(ellipse,#3F7D5310 0%,transparent 60%);pointer-events:none}
 .menu-name-big{font-family:'Noto Serif KR',serif;font-size:28px;font-weight:900;color:var(--tx);margin:4px 0;letter-spacing:-0.5px}
 .menu-sub-txt{font-size:12px;color:var(--green);margin-bottom:14px}
+/* 결과 맨 위 '오늘의 메뉴'를 가장 크게 보여주는 히어로 스타일 */
+.menu-card.hero{background:linear-gradient(160deg,#FBFFF9,#E6F2E0);border-color:#B9D3AE;padding:26px 22px 22px}
+.menu-eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--green);text-transform:uppercase;text-align:center;margin-bottom:6px;opacity:.9}
+.menu-card.hero .menu-name-big{font-size:38px;text-align:center;line-height:1.2;word-break:keep-all}
+.menu-card.hero .menu-sub-txt{text-align:center;margin-bottom:12px}
+.menu-why{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:14px}
+.menu-why .wy{font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px;background:#ffffffb8;border:1px solid #C9DCC0}
+@media(max-width:380px){.menu-card.hero .menu-name-big{font-size:32px}}
 .reason-box{background:#F3F9F0;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 16px}
 .reason-label{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;opacity:.9}
 .reason-text{font-family:'Noto Serif KR',serif;font-size:13px;line-height:2;color:#2E4A32;word-break:keep-all}
@@ -534,17 +542,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 
   <div class="result-wrap" id="result">
     <div id="shareCard0">
-    <!-- 배너 -->
+    <!-- 메뉴 (사이트의 메인 기능) — 결과 맨 위, 가장 크게 -->
+    <div class="menu-card hero">
+      <div class="menu-eyebrow">🍽️ 오늘 당신의 메뉴는</div>
+      <div class="menu-name-big" id="menuName"></div>
+      <div class="menu-sub-txt" id="menuSub"></div>
+      <div class="menu-why" id="menuWhy"></div>
+      <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
+    </div>
+    <!-- 배너 (사주 근거는 메뉴 아래 보조 정보로) -->
     <div class="saju-banner">
       <div class="saju-pillars" id="rPillars"></div>
       <div class="relation-result" id="rRelation"></div>
-    </div>
-    <!-- 메뉴 (사이트의 메인 기능) -->
-    <div class="menu-card">
-      <div class="card-head"><div class="cicon mi-icon">🍽️</div><div><div class="ctag mcolor">오늘의 추천 메뉴</div></div></div>
-      <div class="menu-name-big" id="menuName"></div>
-      <div class="menu-sub-txt" id="menuSub"></div>
-      <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
     </div>
     <!-- 끼니별 메뉴 -->
     <div class="menu-card">
@@ -1423,6 +1432,11 @@ function generate(){
   document.getElementById('menuName').textContent=menuData.m;
   document.getElementById('menuSub').textContent=menuData.s;
   document.getElementById('reasonText').textContent=fill(menuData.r);
+  // 메뉴 아래 '왜 이 메뉴인지' 한 줄 요약 칩 (내 오행 + 오늘의 관계)
+  const menuWhyEl=document.getElementById('menuWhy');
+  if(menuWhyEl)menuWhyEl.innerHTML=
+    `<span class="wy" style="color:${OH_COLOR[myOh]}">${OH_EMOJI[myOh]} ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운</span>`+
+    `<span class="wy" style="color:${OH_COLOR[myOh]}">${rd.emoji} ${rd.label.split(' — ')[0]}</span>`;
   document.getElementById('todayWord').textContent='"'+fill(todayWord)+'"';
 
   // ── 끼니별 메뉴: 기분 그룹의 3가지를 아침/점심/저녁으로 나눠서 보여준다 (메인 추천 = 점심) ──
