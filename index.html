@@ -249,9 +249,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .meal-badge{flex-shrink:0;font-size:9px;font-weight:700;color:var(--gold);background:#FBF0DA;border:1px solid var(--golddim);border-radius:10px;padding:2px 6px}
 /* 메뉴 찾기 링크 버튼 */
 .menu-find-row{display:flex;gap:8px;margin:14px 0 2px}
-.btn-find{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s}
+.btn-find{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .btn-find:hover{border-color:var(--gold);color:var(--gold)}
 .btn-find:active{transform:scale(.96)}
+/* 결과에서 바로 먹으러 가는 주 버튼 (근처 맛집 찾기) */
+.btn-find.primary{background:linear-gradient(135deg,var(--green),#2E6A42);border-color:transparent;color:#fff;flex:1.4}
+.btn-find.primary:hover{filter:brightness(1.08);color:#fff}
+.menu-card.hero .menu-find-row{margin:2px 0 14px}
 /* 메뉴 도감 */
 .diary-subtab{display:flex;gap:6px;margin-bottom:14px}
 .diary-subtab-btn{flex:1;padding:9px;border:1px solid var(--b1);border-radius:10px;background:var(--s2);color:var(--txm);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
@@ -558,6 +562,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
       <div class="menu-name-big" id="menuName"></div>
       <div class="menu-sub-txt" id="menuSub"></div>
       <div class="menu-why" id="menuWhy"></div>
+      <div class="menu-find-row" id="menuFindRow0" style="display:none">
+        <a class="btn-find primary" id="findMap0" target="_blank" rel="noopener">📍 근처 맛집 찾기</a>
+        <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 후기 보기</a>
+      </div>
       <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
     </div>
     <!-- 배너 (사주 근거는 메뉴 아래 보조 정보로) -->
@@ -594,10 +602,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     </div>
     </div>
     <div class="streak-chip" id="streakChip0" style="display:none"></div>
-    <div class="menu-find-row" id="menuFindRow0" style="display:none">
-      <a class="btn-find" id="findMap0" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
-      <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 맛집 검색</a>
-    </div>
     <div class="share-row">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoText0, window._shareLink0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
@@ -676,8 +680,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
     <div class="today-word"><div class="tw-label">✦ 오늘 두 사람에게 ✦</div><div class="tw-text" id="compatTip"></div></div>
     </div>
     <div class="menu-find-row" id="menuFindRow1" style="display:none">
-      <a class="btn-find" id="findMap1" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
-      <a class="btn-find" id="findSearch1" target="_blank" rel="noopener">🔍 맛집 검색</a>
+      <a class="btn-find primary" id="findMap1" target="_blank" rel="noopener">📍 근처 맛집 찾기</a>
+      <a class="btn-find" id="findSearch1" target="_blank" rel="noopener">🔍 후기 보기</a>
     </div>
     <div class="share-row">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoTextC)">💬 카카오톡 공유</button>
@@ -788,8 +792,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
         <div class="menu-sub-txt" id="regionMenuDesc"></div>
       </div>
       <div class="menu-find-row" id="menuFindRow4" style="display:none">
-        <a class="btn-find" id="findMap4" target="_blank" rel="noopener">🗺️ 지도에서 찾기</a>
-        <a class="btn-find" id="findSearch4" target="_blank" rel="noopener">🔍 맛집 검색</a>
+        <a class="btn-find primary" id="findMap4" target="_blank" rel="noopener">📍 근처 맛집 찾기</a>
+        <a class="btn-find" id="findSearch4" target="_blank" rel="noopener">🔍 후기 보기</a>
       </div>
       <div class="region-more">
         <div class="region-more-label">✦ <span id="regionName2"></span>의 다른 특색 메뉴 ✦</div>
@@ -1655,8 +1659,15 @@ function showToast(msg,ms){
 function setMenuFindLinks(rowId,mapId,searchId,menuName){
   const row=document.getElementById(rowId);
   if(!row||!menuName)return;
-  document.getElementById(mapId).href='https://map.kakao.com/link/search/'+encodeURIComponent(menuName);
-  document.getElementById(searchId).href='https://search.naver.com/search.naver?query='+encodeURIComponent(menuName+' 맛집');
+  const map=document.getElementById(mapId);
+  const search=document.getElementById(searchId);
+  // 카카오맵은 모바일에서 열면 '내 위치' 기준으로 주변 맛집을 보여준다
+  map.href='https://map.kakao.com/link/search/'+encodeURIComponent(menuName);
+  search.href='https://search.naver.com/search.naver?query='+encodeURIComponent(menuName+' 맛집 후기');
+  // 버튼 글씨에 실제 메뉴 이름을 넣어 '이걸 먹으러 간다'는 느낌을 준다
+  const short=menuName.length>7?menuName.slice(0,7)+'…':menuName;
+  map.textContent='📍 근처 '+short+' 찾기';
+  search.textContent='🔍 후기 보기';
   row.style.display='flex';
 }
 
