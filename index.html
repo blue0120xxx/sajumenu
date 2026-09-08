@@ -1874,6 +1874,9 @@ const PAY_REASONS_GOOD=[
 function determinePayer(){
   if(people.length<2){alert('최소 2명 이상 입력해주세요.');return}
 
+  // 카운트다운 동안에는 결과를 숨겨둔다 (다시 결정할 때 이전 결과가 깜빡이지 않게)
+  document.getElementById('payResult').classList.remove('show');
+
   const td=getTargetDate2();
   const dayLabel2=targetMode2===0?'오늘':'그날';
 
@@ -1945,7 +1948,8 @@ function determinePayer(){
     staggerReveal('#shareCard2 > *');
     document.getElementById('payResult').scrollIntoView({behavior:'smooth',block:'nearest'});
     const an=document.getElementById('payerAnnounce');
-    if(an){an.style.animation='none';void an.offsetWidth;an.style.animation='payerPop .5s cubic-bezier(.22,1,.36,1)';}
+    // forwards가 없으면 애니메이션이 끝난 뒤 stagger-item의 opacity:0 로 되돌아가 카드가 사라진다
+    if(an){an.style.animation='none';void an.offsetWidth;an.style.animation='payerPop .5s cubic-bezier(.22,1,.36,1) forwards';}
   });
 
   // 공유 텍스트
