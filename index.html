@@ -126,6 +126,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .mood-refine{background:var(--s2);border:1px dashed var(--b2);border-radius:12px;padding:14px;margin-bottom:12px}
 .mood-refine-label{font-size:11px;font-weight:700;color:var(--txm);text-align:center;margin-bottom:10px}
 .mood-refine .mood-chips{margin-bottom:0}
+/* 궁합 관계 종류 선택 (같은 엔진, 진입 문구만 바꿔 여러 콘텐츠처럼) */
+.compat-rel-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rel-chip{background:var(--s2);border:1px solid var(--b2);color:var(--txd);font-size:12px;font-weight:700;padding:9px 6px;border-radius:16px;cursor:pointer;transition:all .15s;user-select:none;text-align:center;white-space:nowrap}
+.rel-chip:hover{border-color:var(--gold);color:var(--tx)}
+.rel-chip.active{background:var(--purpleg);border-color:var(--purple);color:var(--purple)}
 .mood-chip{background:var(--s2);border:1px solid var(--b2);color:var(--txd);font-size:12px;padding:9px 6px;border-radius:16px;cursor:pointer;transition:all .15s;user-select:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mood-chip:hover{border-color:var(--gold);color:var(--tx)}
 .mood-chip.active{background:var(--purpleg);border-color:var(--purple);color:var(--purple);font-weight:700}
@@ -626,7 +631,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 <div class="main">
   <div class="input-card">
     <div class="invite-banner" id="inviteBanner" style="display:none">💌 상대가 보낸 생년월일이 <b>첫 번째 사람</b>에 채워졌어요.<br>두 번째 사람 생일만 고르면 궁합 메뉴가 나와요!</div>
-    <div class="slabel">💑 두 사람의 생년월일을 입력하세요</div>
+    <div class="slabel">💑 두 사람은 어떤 사이인가요?</div>
+    <div class="compat-rel-chips" id="compatRelChips">
+      <div class="rel-chip" data-v="0">💗 썸</div>
+      <div class="rel-chip active" data-v="1">💑 연인</div>
+      <div class="rel-chip" data-v="2">💍 부부</div>
+      <div class="rel-chip" data-v="3">🤝 친구</div>
+      <div class="rel-chip" data-v="4">💼 직장동료</div>
+    </div>
+    <div class="slabel" style="margin-top:16px">✦ 두 사람의 생년월일 ✦</div>
     <!-- Person 1 -->
     <div class="compat-inputs">
       <div class="person-card">
@@ -2420,8 +2433,26 @@ function updateCompat(){
 }
 updateCompat();
 
+// 궁합 관계 종류 — 같은 점수 엔진에 진입 문구/이모지/한마디만 바꿔 여러 콘텐츠처럼 쓴다
+const COMPAT_REL=[
+  {label:'썸',      emoji:'💗',noun:'썸 궁합', note:'아직 썸이라면 메뉴 하나 고르는 것도 밀당이죠. 오늘은 이걸로 자연스럽게!'},
+  {label:'연인',    emoji:'💑',noun:'연인 궁합',note:'연인끼리는 취향 존중이 반이에요. 오늘 데이트 메뉴는 이걸로!'},
+  {label:'부부',    emoji:'💍',noun:'부부 궁합',note:'매일의 "뭐 먹지"가 제일 어렵죠. 오늘은 사주가 정해드렸어요.'},
+  {label:'친구',    emoji:'🤝',noun:'친구 궁합',note:'친구끼리 메뉴 고민은 그만. 오늘은 이걸로 통일!'},
+  {label:'직장동료',emoji:'💼',noun:'직장 궁합',note:'점심 메뉴 회의는 이제 끝. 오늘은 이 메뉴로 갑시다.'},
+];
+let compatRelIdx=1;
+document.querySelectorAll('#compatRelChips .rel-chip').forEach(c=>{c.addEventListener('click',()=>{
+  document.querySelectorAll('#compatRelChips .rel-chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  compatRelIdx=parseInt(c.dataset.v);
+  // 이미 결과가 떠 있으면 바뀐 관계로 바로 다시 계산
+  if(document.getElementById('compatResult').classList.contains('show'))generateCompat();
+})});
+
 function generateCompat(){
   if(!compatState){alert('두 사람의 생년월일을 먼저 입력해주세요.');return}
+  const crel=COMPAT_REL[compatRelIdx]||COMPAT_REL[1];
   const{y1,m1,d1,y2,m2,d2,oh1,oh2,yp1,dp1,yp2,dp2}=compatState;
   const ct=getCompatType(oh1,oh2);
   const ctd=COMPAT_TYPE_DATA[ct];
@@ -2497,7 +2528,7 @@ function generateCompat(){
   // VS 배지
   document.getElementById('compatVs').innerHTML=`
     <span class="compat-person-badge" style="background:${OH_COLOR[oh1]}22;border:1px solid ${OH_COLOR[oh1]}66;color:${OH_COLOR[oh1]}">${OH_EMOJI[oh1]} ${OH_NICK[oh1]} · ${yp1.name}년</span>
-    <span class="compat-vs-txt">💑</span>
+    <span class="compat-vs-txt">${crel.emoji}</span>
     <span class="compat-person-badge" style="background:${OH_COLOR[oh2]}22;border:1px solid ${OH_COLOR[oh2]}66;color:${OH_COLOR[oh2]}">${OH_EMOJI[oh2]} ${OH_NICK[oh2]} · ${yp2.name}년</span>
   `;
 
@@ -2513,21 +2544,25 @@ function generateCompat(){
   document.getElementById('compatMenuSub').textContent=menuData.s;
   document.getElementById('compatReason').textContent=reasonFinal;
   document.getElementById('compatTip').textContent='"'+tipFinal+'"';
+  // 관계 종류에 맞춰 라벨·한마디를 바꿔준다
+  const clbl=document.querySelector('.compat-score-label');
+  if(clbl)clbl.textContent=`${crel.noun} 점수`;
+  document.getElementById('compatDayNote').textContent=`${crel.note} · ${dayNote}`;
 
   document.getElementById('compatResult').classList.add('show');
   staggerReveal('#shareCard1 > *');
   document.getElementById('compatResult').scrollIntoView({behavior:'smooth',block:'nearest'});
 
-  window._compatShareText=`💑 ${todayStr} 오행 궁합 메뉴\n\n${OH_EMOJI[oh1]} ${OH_NAME[oh1]} ${yp1.name}년 + ${OH_EMOJI[oh2]} ${OH_NAME[oh2]} ${yp2.name}년\n\n${ctd.label} ${score}점\n${ctd.desc}\n${dayNote}\n\n🍽️ 함께 먹기 좋은 메뉴: ${menuData.m}\n${reasonFinal}\n\n"${tipFinal}"\n\n#오행궁합 #사주메뉴 #오늘뭐먹지`;
-  window._kakaoTextC=`💑 우리 궁합 ${score}점! (${ctd.label}) 오늘 함께 먹기 좋은 메뉴는 "${menuData.m}" — 우리 궁합 메뉴도 보러가기`;
+  window._compatShareText=`${crel.emoji} ${todayStr} ${crel.noun} 메뉴\n\n${OH_EMOJI[oh1]} ${OH_NAME[oh1]} ${yp1.name}년 + ${OH_EMOJI[oh2]} ${OH_NAME[oh2]} ${yp2.name}년\n\n${ctd.label} ${score}점\n${ctd.desc}\n${dayNote}\n\n🍽️ 함께 먹기 좋은 메뉴: ${menuData.m}\n${reasonFinal}\n\n"${tipFinal}"\n\n#${crel.noun.replace(/ /g,'')} #사주메뉴 #오늘뭐먹지`;
+  window._kakaoTextC=`${crel.emoji} 우리 ${crel.noun} ${score}점! (${ctd.label}) 오늘 함께 먹기 좋은 메뉴는 "${menuData.m}" — 우리도 보러가기`;
 
   // 공유용 미니 카드 채우기
   fillMiniCard({
-    brand:'오행 궁합 메뉴',
+    brand:`${crel.noun} 메뉴`,
     date:todayStr,
-    emoji:'💑',
+    emoji:crel.emoji,
     sub2:`${OH_EMOJI[oh1]} ${OH_NICK[oh1]}·${yp1.name}년  ✕  ${OH_EMOJI[oh2]} ${OH_NICK[oh2]}·${yp2.name}년`,
-    eyebrow:`궁합 ${score}점 · ${ctd.label}`,
+    eyebrow:`${crel.noun} ${score}점 · ${ctd.label}`,
     big:menuData.m,
     sub:menuData.s,
     rel:`💬 ${tipFinal}`,
