@@ -340,6 +340,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .mode-btn{flex:1;padding:11px 4px;border:1px solid var(--b2);border-radius:12px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s var(--ease);box-shadow:var(--sh-sm);white-space:nowrap}
 .mode-btn.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff;transform:translateY(-1px)}
 .mode-btn:active{transform:scale(.97)}
+a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tab-nav{max-width:540px;margin:0 auto 16px;padding:0 16px;position:relative;z-index:1;display:flex;gap:8px}
 .tab-btn{flex:1;padding:10px 4px;border:1px solid var(--b2);border-radius:10px;background:var(--s1);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s var(--ease);text-align:center;white-space:nowrap;line-height:1.6}
 .tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff;box-shadow:var(--sh-sm);transform:translateY(-1px)}
@@ -491,11 +492,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
   <div class="free-badge">✦ 완전 무료</div>
 </header>
 
-<!-- 최상단 모드 전환: 사주 메뉴 / 지역 메뉴 / 입맛 테스트 -->
+<!-- 최상단 모드 전환: 사주 메뉴 / 지역 메뉴 / 입맛 테스트 / 가이드(별도 페이지로 이동) -->
 <div class="mode-switch">
   <button class="mode-btn active" id="modeBtn0" onclick="setMode(0)">🔮 사주메뉴</button>
   <button class="mode-btn" id="modeBtn2" onclick="setMode(2)">🧪 입맛테스트</button>
   <button class="mode-btn" id="modeBtn1" onclick="setMode(1)">🗺️ 지역메뉴</button>
+  <a class="mode-btn" href="/guide/">📖 가이드</a>
 </div>
 
 <section class="hero">
