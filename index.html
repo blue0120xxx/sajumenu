@@ -48,8 +48,8 @@
       "mainEntity": [
         { "@type": "Question", "name": "사주 메뉴는 어떻게 추천되나요?", "acceptedAnswer": { "@type": "Answer", "text": "생년월일로 년주와 일주를 뽑고, 오늘 날짜의 일진과 비교합니다. 내 오행과 오늘 기운의 상생·상극 관계에 지금 기분을 더해 그날의 메뉴를 골라줍니다." } },
         { "@type": "Question", "name": "정말 무료인가요?", "acceptedAnswer": { "@type": "Answer", "text": "네, 모든 기능이 완전 무료입니다. 로그인이나 결제 없이 바로 이용할 수 있습니다." } },
-        { "@type": "Question", "name": "생년월일 정보가 서버에 저장되나요?", "acceptedAnswer": { "@type": "Answer", "text": "아니요. 입력한 생년월일은 사용자의 브라우저에만 저장되어 다음 방문 때 자동으로 채워질 뿐, 외부로 전송되지 않습니다." } },
-        { "@type": "Question", "name": "음력 생일도 넣을 수 있나요?", "acceptedAnswer": { "@type": "Answer", "text": "네. 양력·음력 버튼으로 전환해 입력하면 자동으로 양력으로 변환해 계산합니다(±1일 오차 가능)." } },
+        { "@type": "Question", "name": "생년월일 정보가 서버에 저장되나요?", "acceptedAnswer": { "@type": "Answer", "text": "일반 메뉴 계산은 브라우저에서 처리하고 생년월일도 브라우저에 저장합니다. 다만 궁합 초대 링크를 직접 공유하면 첫 번째 사람의 생일과 윤달 여부가 링크에 포함됩니다." } },
+        { "@type": "Question", "name": "음력 생일도 넣을 수 있나요?", "acceptedAnswer": { "@type": "Answer", "text": "네. 양력·음력 버튼으로 전환해 입력하면 평달·윤달을 구분해 한국 음력 기준으로 양력으로 변환합니다." } },
         { "@type": "Question", "name": "궁합 메뉴는 무엇인가요?", "acceptedAnswer": { "@type": "Answer", "text": "두 사람의 생년월일을 넣으면 오행 궁합을 보고 함께 먹으면 좋은 메뉴를 추천합니다. 링크로 상대를 초대할 수도 있습니다." } },
         { "@type": "Question", "name": "밥값 내기는 어떻게 정해지나요?", "acceptedAnswer": { "@type": "Answer", "text": "여러 명의 생일을 넣으면 각자의 오늘 운세 점수를 계산해 가장 낮거나 높은 사람이 밥값 주인공으로 뽑힙니다. 재미로 즐기는 기능입니다." } }
       ]
@@ -58,6 +58,9 @@
 }
 </script>
 
+<script src="assets/vendor/korean-lunar-calendar-0.4.0.min.js"></script>
+<script src="assets/calendar.js"></script>
+<script src="assets/menu-planner.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
 <!-- 지역 메뉴 커뮤니티(제안·추천)용 Firebase. 설정 전이면 조용히 비활성화됨 -->
@@ -482,6 +485,25 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
 .weather-now .wn-sub{font-weight:400;color:var(--txm)}
 .weather-menus{font-size:12px;color:var(--txd);line-height:1.7}
 .weather-menus b{color:var(--gold)}
+/* Keep the primary action visible before secondary explanations. */
+.stars{overflow:hidden}
+.hero:not(.menu-card){padding:18px 20px 14px}
+.hero:not(.menu-card) .orb{width:48px;height:48px;font-size:23px;margin-bottom:10px}
+.birth-help{font-size:11px;color:var(--txm);line-height:1.7;text-align:center;margin:10px 0 0}
+.input-message{font-size:12px;color:var(--red);line-height:1.6;margin:8px 0}
+.input-message:empty{display:none}
+.leap-control{font-size:12px;color:var(--txd);margin:4px 0 12px;line-height:1.7}
+.leap-control input,.menu-preference input{accent-color:var(--gold);margin-right:6px}
+[hidden]{display:none!important}
+.menu-preference{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txd);padding:10px 0 14px}
+.detail-panel{border:1px solid var(--b1);border-radius:12px;margin:12px 0;background:var(--s2);padding:12px}
+.detail-panel summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--txd);padding:4px}
+.detail-panel[open]>summary{margin-bottom:12px}
+.detail-panel .myinfo{margin:0}
+.share-row.near-menu{margin:0 0 16px}
+.weather-card{margin-top:16px;margin-bottom:20px}
+@media(max-width:480px){.input-card{padding:18px}.tab-nav{gap:6px;margin-bottom:12px}.mode-switch{margin-top:12px;gap:6px}.hero-sub{margin-top:6px}.share-row.near-menu>button{min-height:44px}}
+@media(max-width:360px){.mode-switch{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.mode-btn{min-width:0;padding:10px 2px;font-size:10px}}
 </style>
 </head>
 <body>
@@ -506,19 +528,11 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
   <p class="hero-sub" id="heroSub">생년월일만 넣으면 나의 오행 기운으로<br>오늘 먹을 메뉴를 정해드려요</p>
 </section>
 
-<!-- 날씨 연동 오늘의 메뉴 (위치를 허용하면 지금 날씨에 맞는 메뉴를 보여줘요) -->
-<div class="weather-card" id="weatherCard">
-  <button class="weather-cta" id="weatherBtn" onclick="askWeather()">📍 지금 날씨로 메뉴 추천받기</button>
-  <div class="weather-body" id="weatherBody" style="display:none">
-    <div class="weather-now" id="weatherNow"></div>
-    <div class="weather-menus" id="weatherMenus"></div>
-  </div>
-</div>
 
 <!-- ── 사주 메뉴 모드 ── -->
 <div id="sajuMode">
 <div class="tab-nav">
-  <button class="tab-btn active" onclick="showTab(0)">🔮<br>오늘 운세</button>
+  <button class="tab-btn active" onclick="showTab(0)">🍚<br>오늘 메뉴</button>
   <button class="tab-btn" onclick="showTab(1)">💑<br>궁합</button>
   <button class="tab-btn" onclick="showTab(2)">💸<br>밥값내기</button>
   <button class="tab-btn" onclick="showTab(3)">📔<br>다이어리</button>
@@ -532,20 +546,15 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
       <button class="cal-btn active" id="calBtn0" onclick="setCalType(0)">☀️ 양력</button>
       <button class="cal-btn" id="calBtn1" onclick="setCalType(1)">🌙 음력</button>
     </div>
-    <div class="cal-note" id="calNote" style="display:none">🌙 음력 입력 — 양력으로 자동 변환됩니다 (±1일 오차 가능)</div>
+    <div class="cal-note" id="calNote" style="display:none">🌙 평달·윤달을 구분해 양력으로 변환해요</div>
+    <label class="leap-control" id="leapRow0" hidden><input type="checkbox" id="leap0" onchange="updateInfo()">윤달 생일 <small>(해당 연·월에만 선택 가능)</small></label>
     <div class="birth-row">
-      <div class="birth-group"><div class="blbl">출생 연도</div><select class="bsel" id="byear" onchange="updateInfo()"></select></div>
-      <div class="birth-group"><div class="blbl">출생 월</div><select class="bsel" id="bmonth" onchange="updateInfo()"></select></div>
-      <div class="birth-group"><div class="blbl">출생 일</div><select class="bsel" id="bday" onchange="updateInfo()"></select></div>
+      <div class="birth-group"><div class="blbl">출생 연도</div><select class="bsel" id="byear" aria-label="출생 연도" onchange="updateInfo()"></select></div>
+      <div class="birth-group"><div class="blbl">출생 월</div><select class="bsel" id="bmonth" aria-label="출생 월" onchange="updateInfo()"></select></div>
+      <div class="birth-group"><div class="blbl">출생 일</div><select class="bsel" id="bday" aria-label="출생 일" onchange="updateInfo()"></select></div>
     </div>
 
-    <div class="myinfo" id="myinfo">
-      <!-- 4개 기둥 -->
-      <div class="pillars" id="pillarsRow"></div>
-      <!-- 오행 관계 -->
-      <div class="ohaeng-row" id="ohaengRow"></div>
-      <div class="relation-badge" id="relationBadge"></div>
-    </div>
+
 
     <div class="slabel" style="margin-bottom:10px">✦ 언제를 확인할까요? ✦</div>
     <div class="cal-toggle">
@@ -556,7 +565,17 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
       <input class="date-input" type="date" id="tg0Date" onchange="onTarget0Change()">
     </div>
 
+    <label class="menu-preference"><input type="checkbox" id="mildOnly" onchange="onMealPreferenceChange()">매운 메뉴는 빼주세요</label>
+    <p class="input-message" id="birthError" role="status" aria-live="polite"></p>
     <button class="btn-go" onclick="generate()">🍚 오늘 먹을 메뉴 뽑기</button>
+    <p class="birth-help">생년월일과 오행을 활용한 재미용 추천이에요.<br>입력한 생일은 이 브라우저에만 기억해요.</p>
+    <details class="detail-panel"><summary>내 오행 미리 보기</summary>    <div class="myinfo" id="myinfo">
+      <!-- 4개 기둥 -->
+      <div class="pillars" id="pillarsRow"></div>
+      <!-- 오행 관계 -->
+      <div class="ohaeng-row" id="ohaengRow"></div>
+      <div class="relation-badge" id="relationBadge"></div>
+    </div></details>
   </div>
 
   <div class="result-wrap" id="result">
@@ -572,6 +591,12 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
         <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 후기 보기</a>
       </div>
       <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
+    </div>
+    <div class="share-row near-menu">
+      <button class="btn-kakao" onclick="shareKakao(window._kakaoText0, window._shareLink0)">💬 카카오톡 공유</button>
+      <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
+      <button class="btn-img" id="imgBtn0" onclick="downloadMiniCard('miniCardX','imgBtn0','사주메뉴')">🖼️ 이미지 저장</button>
+      <button class="btn-retry" onclick="generate()">🔮 다시 보기</button>
     </div>
     <!-- 지금 기분: 결과를 먼저 보여주고, 더 정확히 원하면 여기서 반영 -->
     <div class="mood-refine">
@@ -592,17 +617,18 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
     </div>
     <!-- 끼니별 메뉴 -->
     <div class="menu-card">
-      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">오늘 하루 이렇게 먹어보세요</div></div></div>
+      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">아침은 부담 적게, 세 끼는 서로 다르게</div></div></div>
       <div class="meal-row" id="mealRow"></div>
     </div>
     <!-- 금기 메뉴 -->
     <div class="taboo-card">
-      <div class="card-head"><div class="cicon taboo-icon">🙅</div><div><div class="ctag tcolor">오늘의 금기 메뉴</div><div class="csub">이건 오늘만큼은 피해보세요</div></div></div>
+      <div class="card-head"><div class="cicon taboo-icon">🙅</div><div><div class="ctag tcolor">오늘은 다른 메뉴 어때요?</div><div class="csub">오행으로 보는 재미용 참고예요</div></div></div>
       <div class="taboo-food" id="tabooFood"></div>
       <div class="taboo-reason" id="tabooReason"></div>
     </div>
     <!-- 한마디 -->
     <div class="today-word"><div class="tw-label">✦ 오늘의 한마디 ✦</div><div class="tw-text" id="todayWord"></div></div>
+    <details class="detail-panel"><summary>오늘의 운세와 오행 성격 자세히 보기</summary>
     <!-- 운세 -->
     <div class="fortune-card">
       <div class="card-head"><div class="cicon fi-icon">🔮</div><div><div class="ctag fcolor">오늘의 사주 운세</div><div class="csub" id="rSub"></div></div></div>
@@ -617,14 +643,10 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
       <div class="persona-block"><div class="persona-label">✦ 주의할 점</div><div class="persona-text" id="personaCaution"></div></div>
       <div class="persona-block"><div class="persona-label">✦ 상성</div><div class="persona-text" id="personaCompat"></div></div>
     </div>
+    </details>
     </div>
     <div class="streak-chip" id="streakChip0" style="display:none"></div>
-    <div class="share-row">
-      <button class="btn-kakao" onclick="shareKakao(window._kakaoText0, window._shareLink0)">💬 카카오톡 공유</button>
-      <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
-      <button class="btn-img" id="imgBtn0" onclick="downloadMiniCard('miniCardX','imgBtn0','사주메뉴')">🖼️ 이미지 저장</button>
-      <button class="btn-retry" onclick="generate()">🔮 다시 보기</button>
-    </div>
+
   </div><!-- /결과 영역 -->
 </div><!-- /main -->
 </div><!-- /tab0 (오늘 운세 탭) -->
@@ -652,9 +674,10 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
           <button class="cal-btn active" id="c1b0" onclick="setCal1(0)">☀️ 양력</button>
           <button class="cal-btn" id="c1b1" onclick="setCal1(1)">🌙 음력</button>
         </div>
-        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">연도</div><select class="bsel" id="cy1" onchange="updateCompat()"></select></div>
-        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">월</div><select class="bsel" id="cm1" onchange="updateCompat()"></select></div>
-        <div class="birth-group" style="margin-bottom:8px"><div class="blbl">일</div><select class="bsel" id="cd1" onchange="updateCompat()"></select></div>
+        <label class="leap-control" id="leapRow1" hidden><input type="checkbox" id="leap1" onchange="updateCompat()">윤달 생일 <small>(해당 연·월에만 선택 가능)</small></label>
+        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">연도</div><select class="bsel" id="cy1" aria-label="1번째 사람 연도" onchange="updateCompat()"></select></div>
+        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">월</div><select class="bsel" id="cm1" aria-label="1번째 사람 월" onchange="updateCompat()"></select></div>
+        <div class="birth-group" style="margin-bottom:8px"><div class="blbl">일</div><select class="bsel" id="cd1" aria-label="1번째 사람 일" onchange="updateCompat()"></select></div>
         <div class="person-ohaeng" id="p1oh"></div>
       </div>
       <div class="person-card">
@@ -663,9 +686,10 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
           <button class="cal-btn active" id="c2b0" onclick="setCal2(0)">☀️ 양력</button>
           <button class="cal-btn" id="c2b1" onclick="setCal2(1)">🌙 음력</button>
         </div>
-        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">연도</div><select class="bsel" id="cy2" onchange="updateCompat()"></select></div>
-        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">월</div><select class="bsel" id="cm2" onchange="updateCompat()"></select></div>
-        <div class="birth-group" style="margin-bottom:8px"><div class="blbl">일</div><select class="bsel" id="cd2" onchange="updateCompat()"></select></div>
+        <label class="leap-control" id="leapRow2" hidden><input type="checkbox" id="leap2" onchange="updateCompat()">윤달 생일 <small>(해당 연·월에만 선택 가능)</small></label>
+        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">연도</div><select class="bsel" id="cy2" aria-label="2번째 사람 연도" onchange="updateCompat()"></select></div>
+        <div class="birth-group" style="margin-bottom:6px"><div class="blbl">월</div><select class="bsel" id="cm2" aria-label="2번째 사람 월" onchange="updateCompat()"></select></div>
+        <div class="birth-group" style="margin-bottom:8px"><div class="blbl">일</div><select class="bsel" id="cd2" aria-label="2번째 사람 일" onchange="updateCompat()"></select></div>
         <div class="person-ohaeng" id="p2oh"></div>
       </div>
     </div>
@@ -679,8 +703,10 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
       <input class="date-input" type="date" id="tg1Date">
     </div>
 
+    <p class="input-message" id="compatError" role="status" aria-live="polite"></p>
     <button class="btn-go" onclick="generateCompat()">💑 궁합 메뉴 보기</button>
     <button class="btn-invite" id="btnInvite" onclick="shareInvite()">💌 상대에게 링크 보내기 (내 생일만 넣어서)</button>
+    <p class="birth-help">궁합 초대 링크에는 첫 번째 사람의 생일과 윤달 여부가 포함돼요.</p>
   </div>
 
   <!-- 궁합 결과 -->
@@ -735,6 +761,7 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
     <div class="person-row" id="personList"></div>
 
     <!-- 추가 버튼 -->
+    <p class="input-message" id="payError" role="status" aria-live="polite"></p>
     <button class="btn-add-person" id="addPersonBtn" onclick="addPerson()">＋ 인원 추가 (최대 5명)</button>
 
     <div class="slabel" style="margin-bottom:10px">✦ 언제를 확인할까요? ✦</div>
@@ -801,12 +828,21 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
 </div><!-- /tab3 -->
 </div><!-- /sajuMode -->
 
+<!-- 날씨 연동 오늘의 메뉴 (위치를 허용하면 지금 날씨에 맞는 메뉴를 보여줘요) -->
+<div class="weather-card" id="weatherCard">
+  <button class="weather-cta" id="weatherBtn" onclick="askWeather()">📍 지금 날씨로 메뉴 추천받기</button>
+  <div class="weather-body" id="weatherBody" style="display:none">
+    <div class="weather-now" id="weatherNow"></div>
+    <div class="weather-menus" id="weatherMenus"></div>
+  </div>
+</div>
+
 <!-- ── 지역 메뉴 모드 (사주와 무관한 별도 코너) ── -->
 <div id="regionMode" style="display:none">
 <div class="main">
   <div class="input-card">
     <div class="slabel">🗺️ 지역별 특색 메뉴</div>
-    <p class="region-intro">유명 관광 메뉴 말고, 그 동네 사람들이 즐겨 먹는 <b>로컬 특색 메뉴</b>를 골라드려요. 날마다 오늘의 픽이 바뀌어요.</p>
+    <p class="region-intro">그 지역을 대표하는 음식과 <b>동네 특색 메뉴</b>를 골라드려요. 날마다 오늘의 픽이 바뀌어요.</p>
     <div class="birth-group" style="margin-bottom:14px">
       <div class="blbl">지역 선택</div>
       <select class="bsel" id="regionSel" onchange="renderRegion()"></select>
@@ -898,7 +934,7 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
   <p class="seo-p">
     매일 반복되는 "점심 뭐 먹지" 고민, <b>오늘의 사주 메뉴</b>가 대신 정해드려요.
     생년월일을 넣으면 사주팔자와 오행(목·화·토·금·수) 기운을 풀어서
-    오늘 나에게 맞는 메뉴 한 가지와 끼니별 메뉴, 피하면 좋은 금기 메뉴까지 알려줘요.
+    오늘 나에게 맞는 메뉴 한 가지와 끼니별 메뉴, 오행으로 보는 참고 메뉴까지 알려줘요.
     커플 궁합 메뉴, 여럿이 밥값 내기 정하기, 지역별 특색 메뉴도 <b>완전 무료</b>로 즐길 수 있어요.
   </p>
 
@@ -922,11 +958,11 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
   </div>
   <div class="faq-item">
     <div class="faq-q">생년월일 정보가 서버에 저장되나요?</div>
-    <div class="faq-a">아니요. 입력한 생년월일은 이 브라우저에만 저장돼서 다음 방문 때 자동으로 채워질 뿐, 밖으로 전송되지 않아요.</div>
+    <div class="faq-a">일반 메뉴 계산과 생일 저장은 이 브라우저에서 처리해요. 다만 궁합 초대 링크를 직접 공유하면 첫 번째 사람의 생일과 윤달 여부가 링크에 포함돼요.</div>
   </div>
   <div class="faq-item">
     <div class="faq-q">음력 생일도 넣을 수 있나요?</div>
-    <div class="faq-a">네. 양력·음력 버튼으로 바꿔서 입력하면 자동으로 양력으로 변환해 계산해요(±1일 오차 가능).</div>
+    <div class="faq-a">네. 양력·음력 버튼으로 바꿔서 입력하면 평달·윤달을 구분해 한국 음력 기준으로 양력으로 변환해요.</div>
   </div>
   <div class="faq-item">
     <div class="faq-q">궁합 메뉴는 무엇인가요?</div>
@@ -982,18 +1018,42 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
 </div>
 
 <script>
-// ── 음력 → 양력 변환 ──
-// 구정(설날) = 음력 1월 1일의 양력 날짜 (CNY 테이블 활용)
-// 음력 N월 M일 ≈ 설날 + (N-1)×29.53 + (M-1) 일
-function lunarToSolar(y,m,d){
-  const cny=CNY[y];
-  if(!cny)return{y,m,d}; // 데이터 없으면 그대로 반환
-  const[cm,cd]=cny;
-  const base=new Date(y,cm-1,cd);
-  const offset=Math.round((m-1)*29.53)+(d-1);
-  const solar=new Date(base.getTime()+offset*86400000);
-  return{y:solar.getFullYear(),m:solar.getMonth()+1,d:solar.getDate()};
+// ── 공통 날짜 입력: 실제 양력·한국 음력 날짜만 허용 ──
+function toSolar(y,m,d,lunar=false,leap=false){return MenuCalendar.convert(y,m,d,lunar,leap)}
+function fillBirthSelects(ySel,mSel,dSel,values={}){
+  ySel.replaceChildren(new Option('연도 선택',''));
+  for(let y=Math.min(new Date().getFullYear(),2050);y>=1940;y--)ySel.add(new Option(y+'년',y));
+  mSel.replaceChildren(new Option('월 선택',''));
+  for(let m=1;m<=12;m++)mSel.add(new Option(m+'월',m));
+  dSel.replaceChildren(new Option('일 선택',''));
+  for(let d=1;d<=31;d++)dSel.add(new Option(d+'일',d));
+  ySel.value=values.y||'';mSel.value=values.m||'';dSel.value=values.d||'';
 }
+function syncBirthInputs(yId,mId,dId,lunar,leapId){
+  const ys=document.getElementById(yId),ms=document.getElementById(mId),ds=document.getElementById(dId);
+  const y=Number(ys.value),m=Number(ms.value),oldDay=ds.value;
+  const leap=document.getElementById(leapId);
+  const row=leap.parentElement;
+  row.hidden=!lunar;
+  const canLeap=lunar&&Boolean(toSolar(y,m,1,true,true));
+  const lostLeap=leap.checked&&!canLeap;
+  leap.disabled=!canLeap;
+  if(!canLeap)leap.checked=false;
+  const max=MenuCalendar.daysInMonth(y,m,lunar,leap.checked);
+  ds.replaceChildren(new Option('일 선택',''));
+  for(let d=1;d<=max;d++)ds.add(new Option(d+'일',d));
+  ds.disabled=!max;
+  ds.value=!lostLeap&&Number(oldDay)<=max?oldDay:'';
+  const d=Number(ds.value),solar=toSolar(y,m,d,lunar,leap.checked);
+  if(!solar)return null;
+  const today=new Date();
+  if(Date.UTC(solar.y,solar.m-1,solar.d)>Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()))return null;
+  return {y,m,d,leap:leap.checked,solar};
+}
+function setDateError(id,message){document.getElementById(id).textContent=message}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function dateErrorText(){return typeof KoreanLunarCalendar==='undefined'?'음력 계산 파일을 불러오지 못했어요. 새로고침하거나 양력을 선택해주세요.':'생년월일을 모두 선택해주세요. 월·연도를 바꾼 뒤에는 날짜를 다시 확인해주세요.'}
+function onMealPreferenceChange(){if(document.getElementById('result').classList.contains('show'))generate(true)}
 
 // 양력/음력 타입 (0=양력, 1=음력)
 let calType=0, calType1=0, calType2=0;
@@ -1016,12 +1076,6 @@ function setCal2(t){
   document.getElementById('c2b0').classList.toggle('active',t===0);
   document.getElementById('c2b1').classList.toggle('active',t===1);
   updateCompat();
-}
-
-// 입력값을 양력으로 변환해서 반환
-function toSolar(y,m,d,lunar){
-  if(!lunar)return{y,m,d};
-  return lunarToSolar(y,m,d);
 }
 
 // ── 별 ──
@@ -1112,12 +1166,12 @@ function yearPillar(y,m,d){
   return{g,z,oh:GAN_OH[g],name:GAN[g]+ZHI[z],char:GAN_HJ[g]+ZHI_HJ[z],tti:TTI[z],ttiEm:TTI_EM[z],zy};
 }
 
-// 일주 (기준: 2000-01-01 = 丙辰, index 52)
+// 일주 (한국 음력 라이브러리와 대조한 기준: 2000-01-01 = 戊午, index 54)
 function dayPillar(y,m,d){
-  const ref=new Date(2000,0,1);
-  const tgt=new Date(y,m-1,d);
+  const ref=Date.UTC(2000,0,1);
+  const tgt=Date.UTC(y,m-1,d);
   const diff=Math.round((tgt-ref)/86400000);
-  const idx=((52+diff)%60+60)%60;
+  const idx=((54+diff)%60+60)%60;
   const g=idx%10,z=idx%12;
   return{g,z,oh:GAN_OH[g],name:GAN[g]+ZHI[z],char:GAN_HJ[g]+ZHI_HJ[z]};
 }
@@ -1294,24 +1348,12 @@ function calcScores(relKey,moodIdx,seed){
   });
 }
 
-// 셀렉트 채우기
+// 셀렉트 채우기 (첫 방문에는 예시 생일을 실제 생일로 사용하지 않음)
 const now=new Date();
 const yearSel=document.getElementById('byear'),monthSel=document.getElementById('bmonth'),daySel=document.getElementById('bday');
-for(let y=now.getFullYear()-5;y>=1940;y--){const o=document.createElement('option');o.value=y;o.textContent=y+'년';yearSel.appendChild(o)}
-yearSel.value=1990;
-for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';monthSel.appendChild(o)}
-monthSel.value=6;
-for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';daySel.appendChild(o)}
-daySel.value=15;
-
-// 지난번에 입력한 생년월일을 기억해서 자동으로 채워준다
-// (양력/음력 적용은 뒤쪽에서 다른 변수 초기화가 끝난 다음 처리한다)
 const savedBirth=loadBirth();
-if(savedBirth&&savedBirth.y&&savedBirth.m&&savedBirth.d){
-  yearSel.value=savedBirth.y;
-  monthSel.value=savedBirth.m;
-  daySel.value=savedBirth.d;
-}
+fillBirthSelects(yearSel,monthSel,daySel,savedBirth||{});
+document.getElementById('leap0').checked=Boolean(savedBirth&&savedBirth.leap);
 
 // 사이트를 연 순간 "오늘도 방문" 도장을 찍는다 (연속 방문 스트릭)
 const _streakToday=touchStreak();
@@ -1347,7 +1389,7 @@ function setTargetMode0(m){
 function getTargetDate0(){
   if(targetMode0===0)return new Date(now);
   const[y,m,d]=tg0DateInput.value.split('-').map(Number);
-  if(!y)return new Date(now);
+  if(!MenuCalendar.solarValid(y,m,d)||!tg0DateInput.validity.valid)return null;
   return new Date(y,m-1,d);
 }
 
@@ -1366,24 +1408,29 @@ function setTargetMode2(m){
 function getTargetDate2(){
   if(targetMode2===0)return new Date(now);
   const[y,m,d]=tg2DateInput.value.split('-').map(Number);
-  if(!y)return new Date(now);
+  if(!MenuCalendar.solarValid(y,m,d)||!tg2DateInput.validity.valid)return null;
   return new Date(y,m-1,d);
 }
 
-function saveBirth(y,m,d,cal){
-  try{localStorage.setItem('sajuBirth',JSON.stringify({y,m,d,cal}))}catch(e){}
+function saveBirth(y,m,d,cal,leap=false){
+  try{localStorage.setItem('sajuBirth',JSON.stringify({y,m,d,cal,leap}))}catch(e){}
 }
 function loadBirth(){
   try{return JSON.parse(localStorage.getItem('sajuBirth')||'null')}catch(e){return null}
 }
 
-function updateInfo(){
-  const yi=parseInt(yearSel.value),mi=parseInt(monthSel.value),di=parseInt(daySel.value);
-  if(!yi||!mi||!di)return;
-  saveBirth(yi,mi,di,calType);
-  const{y,m,d}=toSolar(yi,mi,di,calType===1);
+function updateInfo(hideResult=true){
+  state=null;
+  if(hideResult)document.getElementById('result').classList.remove('show');
+  const birth=syncBirthInputs('byear','bmonth','bday',calType===1,'leap0');
+  document.getElementById('myinfo').classList.remove('show');
+  setDateError('birthError','');
+  if(!birth)return;
+  saveBirth(birth.y,birth.m,birth.d,calType,birth.leap);
+  const {y,m,d}=birth.solar;
 
   const td=getTargetDate0();
+  if(!td){setDateError('birthError','조회할 날짜를 오늘 이후로 선택해주세요.');return;}
   const yp=yearPillar(y,m,d);
   const dp=dayPillar(y,m,d);
   const tdp=dayPillar(td.getFullYear(),td.getMonth()+1,td.getDate());
@@ -1423,7 +1470,8 @@ if(savedBirth&&savedBirth.cal===1)setCalType(1);else setCalType(0);
 function onTarget0Change(){updateInfo()}
 
 function generate(isRefine){
-  if(!state){alert('생년월일을 먼저 입력해주세요.');return}
+  updateInfo(false);
+  if(!state){document.getElementById('result').classList.remove('show');if(!document.getElementById('birthError').textContent)setDateError('birthError',dateErrorText());return}
   const {y,m,d,yp,dp,tdp,myOh,todayOh,rel,td}=state;
   const calLabel=calType===1?' (음력→양력)':'';
   const rd=REL_DATA[rel];
@@ -1439,8 +1487,8 @@ function generate(isRefine){
     if(menuEl<0)menuEl=myOh;
   }
   // 기분에 해당하는 그룹(3개)에서 날짜 기반으로 하나 선택
-  const menuGroup=OH_MENUS[menuEl][moodIdx];
-  const menuData=pick(menuGroup,seed+7);
+  const mealPlan=MenuPlanner.plan(OH_MENUS,menuEl,moodIdx,seed,document.getElementById('mildOnly').checked);
+  const menuData=mealPlan.main;
 
   // 운세 텍스트
   const fortuneTemplate=pick(FORTUNES[rel],seed+3);
@@ -1501,12 +1549,11 @@ function generate(isRefine){
     `<span class="wy" style="color:${OH_COLOR[myOh]}">${rd.emoji} ${rd.label.split(' — ')[0]}</span>`;
   document.getElementById('todayWord').textContent='"'+fill(todayWord)+'"';
 
-  // ── 끼니별 메뉴: 기분 그룹의 3가지를 아침/점심/저녁으로 나눠서 보여준다 (메인 추천 = 점심) ──
-  const mealOthers=menuGroup.filter(x=>x.m!==menuData.m);
+  // 아침 후보와 간식 제외 목록을 적용하고, 점심이 매운 날에는 저녁을 담백하게 선택한다.
   const meals=[
-    {when:'아침',emoji:'🌅',data:mealOthers[0]||menuData},
-    {when:'점심',emoji:'☀️',data:menuData,primary:true},
-    {when:'저녁',emoji:'🌙',data:mealOthers[1]||mealOthers[0]||menuData},
+    {when:'아침',emoji:'🌅',data:mealPlan.breakfast},
+    {when:'점심',emoji:'☀️',data:mealPlan.main,primary:true},
+    {when:'저녁',emoji:'🌙',data:mealPlan.dinner},
   ];
   document.getElementById('mealRow').innerHTML=meals.map(x=>
     `<div class="meal-item${x.primary?' primary':''}">`+
@@ -1549,10 +1596,10 @@ function generate(isRefine){
     cta:'생년월일만 넣으면 오늘 먹을 메뉴가 딱',
   });
 
-  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n🕰️ 끼니별 — 아침 ${meals[0].data.m} / 점심 ${meals[1].data.m} / 저녁 ${meals[2].data.m}\n\n⚠️ 오늘의 금기 메뉴: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
+  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n🕰️ 끼니별 — 아침 ${meals[0].data.m} / 점심 ${meals[1].data.m} / 저녁 ${meals[2].data.m}\n\n⚠️ 오늘의 메뉴 참고: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
   window._kakaoText0=`🔮 오늘 나는 ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운! 사주로 알아본 오늘의 메뉴는 "${menuData.m}" 🍽️ 너의 메뉴는 뭘까?`;
-  // 이 결과를 바로 볼 수 있는 링크. 생일이 담겨 있어서 친구가 열면 자동으로 채워져요
-  window._shareLink0=`${location.origin}${location.pathname}?b=${y}.${m}.${d}`;
+  // 일반 결과 공유에는 생년월일을 넣지 않는다. 생일 공유는 명시적인 궁합 초대에서만 제공한다.
+  window._shareLink0=`${location.origin}${location.pathname}`;
   window._shareText+=`\n\n👉 나도 사주 메뉴 보기\n${window._shareLink0}`;
 
   // 다이어리에 자동 저장
@@ -1787,7 +1834,7 @@ function addPerson(){
   if(people.length>=5)return;
   personCount++;
   const id=personCount;
-  const person={id,name:'',y:1990,m:6,d:15,lunar:false};
+  const person={id,name:'',y:0,m:0,d:0,lunar:false,leap:false};
   people.push(person);
   renderPeopleList();
   updateAddBtn();
@@ -1814,7 +1861,7 @@ function renderPeopleList(){
     div.innerHTML=`
       <div class="person-entry-head">
         <div class="person-num">${idx+1}</div>
-        <input class="person-name-input" type="text" placeholder="이름 또는 별명" value="${p.name}"
+        <input class="person-name-input" type="text" placeholder="이름 또는 별명" value="${escapeHtml(p.name)}"
           oninput="people[${idx}].name=this.value">
         ${people.length>2?`<button class="btn-remove" onclick="removePerson(${p.id})">×</button>`:''}
       </div>
@@ -1822,15 +1869,16 @@ function renderPeopleList(){
         <button class="cal-btn ${p.lunar?'':'active'}" onclick="setPersonCal(${idx},false)">☀️ 양력</button>
         <button class="cal-btn ${p.lunar?'active':''}" onclick="setPersonCal(${idx},true)">🌙 음력</button>
       </div>
+      <label class="leap-control" hidden><input type="checkbox" id="pleap${p.id}" onchange="updatePersonDate(${idx})">윤달 생일 <small>(해당 연·월에만 선택 가능)</small></label>
       <div class="person-birth">
         <div class="birth-group"><div class="blbl">연도</div>
-          <select class="bsel" onchange="people[${idx}].y=parseInt(this.value)" id="py${p.id}"></select>
+          <select class="bsel" aria-label="${idx+1}번째 사람 연도" onchange="updatePersonDate(${idx})" id="py${p.id}"></select>
         </div>
         <div class="birth-group"><div class="blbl">월</div>
-          <select class="bsel" onchange="people[${idx}].m=parseInt(this.value)" id="pm${p.id}"></select>
+          <select class="bsel" aria-label="${idx+1}번째 사람 월" onchange="updatePersonDate(${idx})" id="pm${p.id}"></select>
         </div>
         <div class="birth-group"><div class="blbl">일</div>
-          <select class="bsel" onchange="people[${idx}].d=parseInt(this.value)" id="pd${p.id}"></select>
+          <select class="bsel" aria-label="${idx+1}번째 사람 일" onchange="updatePersonDate(${idx})" id="pd${p.id}"></select>
         </div>
       </div>
     `;
@@ -1840,15 +1888,22 @@ function renderPeopleList(){
     const ySel=document.getElementById('py'+p.id);
     const mSel=document.getElementById('pm'+p.id);
     const dSel=document.getElementById('pd'+p.id);
-    for(let y=now.getFullYear()-5;y>=1940;y--){const o=document.createElement('option');o.value=y;o.textContent=y+'년';ySel.appendChild(o)}
-    ySel.value=p.y;
-    for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';mSel.appendChild(o)}
-    mSel.value=p.m;
-    for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';dSel.appendChild(o)}
-    dSel.value=p.d;
+    fillBirthSelects(ySel,mSel,dSel,p);
+    document.getElementById('pleap'+p.id).checked=Boolean(p.leap);
+    updatePersonDate(idx);
   });
 }
 
+function updatePersonDate(idx){
+  const p=people[idx];
+  syncBirthInputs('py'+p.id,'pm'+p.id,'pd'+p.id,p.lunar,'pleap'+p.id);
+  p.y=Number(document.getElementById('py'+p.id).value);
+  p.m=Number(document.getElementById('pm'+p.id).value);
+  p.d=Number(document.getElementById('pd'+p.id).value);
+  p.leap=document.getElementById('pleap'+p.id).checked;
+  document.getElementById('payResult').classList.remove('show');
+  setDateError('payError','');
+}
 function setPersonCal(idx,lunar){
   people[idx].lunar=lunar;
   renderPeopleList();
@@ -1856,7 +1911,7 @@ function setPersonCal(idx,lunar){
 
 // 개인 운세 점수 계산
 function calcPayScore(p,td){
-  const s=toSolar(p.y,p.m,p.d,p.lunar);
+  const s=toSolar(p.y,p.m,p.d,p.lunar,p.leap);
   const yp=yearPillar(s.y,s.m,s.d);
   const dp=dayPillar(s.y,s.m,s.d);
   const myOh=dominantOh(yp,dp);
@@ -1897,11 +1952,15 @@ const PAY_REASONS_GOOD=[
 
 function determinePayer(){
   if(people.length<2){alert('최소 2명 이상 입력해주세요.');return}
+  const invalid=people.findIndex(p=>!syncBirthInputs('py'+p.id,'pm'+p.id,'pd'+p.id,p.lunar,'pleap'+p.id));
+  if(invalid>=0){document.getElementById('payResult').classList.remove('show');setDateError('payError',(invalid+1)+'번째 사람: '+dateErrorText());return}
+  setDateError('payError','');
 
   // 카운트다운 동안에는 결과를 숨겨둔다 (다시 결정할 때 이전 결과가 깜빡이지 않게)
   document.getElementById('payResult').classList.remove('show');
 
   const td=getTargetDate2();
+  if(!td){setDateError('payError','조회할 날짜를 오늘 이후로 선택해주세요.');return}
   const dayLabel2=targetMode2===0?'오늘':'그날';
 
   // 각 사람 점수 계산
@@ -1955,7 +2014,7 @@ function determinePayer(){
         <div class="rank-num">${rankEmoji}</div>
         <div class="rank-ohaeng-badge" style="background:${OH_COLOR[r.myOh]}22;border:1px solid ${OH_COLOR[r.myOh]}66">${OH_EMOJI[r.myOh]}</div>
         <div class="rank-info">
-          <div class="rank-name">${r.displayName} ${isPayer?(payMode===0?'💸':'👑'):''}</div>
+          <div class="rank-name">${escapeHtml(r.displayName)} ${isPayer?(payMode===0?'💸':'👑'):''}</div>
           <div class="rank-desc">${r.yp.name}년 ${r.dp.name}일 · ${ohLabel(r.myOh)} · ${REL_DESC[r.rel]||''}</div>
         </div>
         <div class="rank-score-wrap">
@@ -1994,7 +2053,7 @@ function determinePayer(){
     sub:reason,
     rel:null,
     accent:isLoser?'#B8412E':'#B07A22',
-    scores:results.map((r,i)=>`${i+1}위 ${r.displayName} <b>${r.score}</b>`).join('<span style="color:#C9B78F">·</span>'),
+    scores:results.map((r,i)=>`${i+1}위 ${escapeHtml(r.displayName)} <b>${r.score}</b>`).join('<span style="color:#C9B78F">·</span>'),
     cta:'우리도 사주로 밥값 정하기 · sajumenu.com',
   });
 }
@@ -2147,7 +2206,7 @@ function setMode(m){
   if(m===1){
     orb.textContent='🗺️';
     title.innerHTML='우리 동네<br><span class="gold-txt">오늘의 특색 메뉴</span>';
-    sub.innerHTML='관광 메뉴 말고, 그 지역 사람들이<br>즐겨 먹는 로컬 메뉴로 골라드려요';
+    sub.innerHTML='그 지역을 대표하는 음식과<br>동네에서 즐기는 특색 메뉴를 골라드려요';
   }else if(m===2){
     orb.textContent='🧪';
     title.innerHTML='질문 12개로 알아보는<br><span class="gold-txt">나의 입맛 유형</span>';
@@ -2409,12 +2468,7 @@ async function fetchWeather(lat,lon){
 })();
 
 // ── 궁합 셀렉트 채우기 ──
-['cy1','cm1','cd1','cy2','cm2','cd2'].forEach(id=>{
-  const sel=document.getElementById(id);
-  if(id.startsWith('cy')){for(let y=now.getFullYear()-5;y>=1940;y--){const o=document.createElement('option');o.value=y;o.textContent=y+'년';sel.appendChild(o)}sel.value=id==='cy1'?1990:1992;}
-  else if(id.startsWith('cm')){for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'월';sel.appendChild(o)}sel.value=id==='cm1'?6:3;}
-  else{for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'일';sel.appendChild(o)}sel.value=id==='cd1'?15:22;}
-});
+for(let i=1;i<=2;i++)fillBirthSelects(document.getElementById('cy'+i),document.getElementById('cm'+i),document.getElementById('cd'+i));
 
 // ── 조회 날짜(오늘/날짜 지정) — 궁합 탭 ──
 let targetMode1=0;
@@ -2431,7 +2485,7 @@ function setTargetMode1(m){
 function getTargetDate1(){
   if(targetMode1===0)return new Date(now);
   const[y,m,d]=tg1DateInput.value.split('-').map(Number);
-  if(!y)return new Date(now);
+  if(!MenuCalendar.solarValid(y,m,d)||!tg1DateInput.validity.valid)return null;
   return new Date(y,m-1,d);
 }
 
@@ -2491,12 +2545,16 @@ function getCompatType(oh1,oh2){
 
 let compatState=null;
 
-function updateCompat(){
-  const yi1=parseInt(document.getElementById('cy1').value),mi1=parseInt(document.getElementById('cm1').value),di1=parseInt(document.getElementById('cd1').value);
-  const yi2=parseInt(document.getElementById('cy2').value),mi2=parseInt(document.getElementById('cm2').value),di2=parseInt(document.getElementById('cd2').value);
-  if(!yi1||!mi1||!di1||!yi2||!mi2||!di2)return;
-  const s1=toSolar(yi1,mi1,di1,calType1===1);
-  const s2=toSolar(yi2,mi2,di2,calType2===1);
+function updateCompat(hideResult=true){
+  compatState=null;
+  if(hideResult)document.getElementById('compatResult').classList.remove('show');
+  document.getElementById('p1oh').classList.remove('show');
+  document.getElementById('p2oh').classList.remove('show');
+  const birth1=syncBirthInputs('cy1','cm1','cd1',calType1===1,'leap1');
+  const birth2=syncBirthInputs('cy2','cm2','cd2',calType2===1,'leap2');
+  setDateError('compatError','');
+  if(!birth1||!birth2)return;
+  const s1=birth1.solar,s2=birth2.solar;
   const{y:y1,m:m1,d:d1}=s1,{y:y2,m:m2,d:d2}=s2;
   const yp1=yearPillar(y1,m1,d1),dp1=dayPillar(y1,m1,d1);
   const yp2=yearPillar(y2,m2,d2),dp2=dayPillar(y2,m2,d2);
@@ -2531,12 +2589,14 @@ document.querySelectorAll('#compatRelChips .rel-chip').forEach(c=>{c.addEventLis
 })});
 
 function generateCompat(){
-  if(!compatState){alert('두 사람의 생년월일을 먼저 입력해주세요.');return}
+  updateCompat(false);
+  if(!compatState){document.getElementById('compatResult').classList.remove('show');setDateError('compatError','두 사람의 '+dateErrorText());return}
   const crel=COMPAT_REL[compatRelIdx]||COMPAT_REL[1];
   const{y1,m1,d1,y2,m2,d2,oh1,oh2,yp1,dp1,yp2,dp2}=compatState;
   const ct=getCompatType(oh1,oh2);
   const ctd=COMPAT_TYPE_DATA[ct];
   const td=getTargetDate1();
+  if(!td){document.getElementById('compatResult').classList.remove('show');setDateError('compatError','만날 날짜를 오늘 이후로 선택해주세요.');return}
   const dayLabel1=targetMode1===0?'오늘':'그날';
   const seed=y1*1000+m1*100+d1+y2*100+m2*10+d2+td.getFullYear()*372+td.getMonth()*31+td.getDate();
 
@@ -2698,14 +2758,16 @@ function shareKakao(text, linkUrl){
 // ── 궁합 초대 링크 ──
 // 첫 번째 사람 생일을 링크에 담아 상대에게 보낸다. 상대가 링크를 열면 자동으로 채워진다.
 function buildInviteURL(){
+  if(!syncBirthInputs('cy1','cm1','cd1',calType1===1,'leap1'))return null;
   const y=document.getElementById('cy1').value;
   const m=document.getElementById('cm1').value;
   const d=document.getElementById('cd1').value;
   const l=(calType1===1)?1:0;
-  return `${location.origin}${location.pathname}?invite=${y}.${m}.${d}.${l}`;
+  return `${location.origin}${location.pathname}?invite=${y}.${m}.${d}.${l}.${document.getElementById('leap1').checked?1:0}`;
 }
 function shareInvite(){
   const url=buildInviteURL();
+  if(!url){setDateError('compatError','첫 번째 사람의 '+dateErrorText());return}
   const msg=`💑 우리 궁합 메뉴 볼래? 내 생일은 넣어놨으니 너 생일만 고르면 돼!\n${url}`;
   if(navigator.share){
     navigator.share({title:'사주메뉴 궁합',text:'우리 궁합 메뉴 볼래? 내 생일은 넣어놨어!',url}).catch(()=>{});
@@ -2722,15 +2784,13 @@ function shareInvite(){
 (function handleInvite(){
   const raw=new URLSearchParams(location.search).get('invite');
   if(!raw)return;
-  const [y,m,d,l]=raw.split('.').map(Number);
-  if(!y||!m||!d)return;
+  const [y,m,d,l,leap=0]=raw.split('.').map(Number);
+  if(!toSolar(y,m,d,l===1,leap===1))return;
   showTab(1);
-  if(l===1)setCal1(1);
-  ['cy1','cm1','cd1'].forEach((id,i)=>{
-    const el=document.getElementById(id);
-    if(el)el.value=[y,m,d][i];
-  });
-  updateCompat();
+  calType1=l===1?1:0;
+  fillBirthSelects(document.getElementById('cy1'),document.getElementById('cm1'),document.getElementById('cd1'),{y,m,d});
+  document.getElementById('leap1').checked=leap===1;
+  setCal1(calType1);
   const b=document.getElementById('inviteBanner');
   if(b)b.style.display='block';
   setTimeout(()=>{
@@ -2744,10 +2804,11 @@ function shareInvite(){
   const raw=new URLSearchParams(location.search).get('b');
   if(!raw)return;
   const [by,bm,bd]=raw.split('.').map(Number);
-  if(!by||!bm||!bd)return;
+  if(!toSolar(by,bm,bd,false))return;
   const ys=document.getElementById('byear'),ms=document.getElementById('bmonth'),ds=document.getElementById('bday');
   if(!ys||!ms||!ds)return;
-  ys.value=by; ms.value=bm; ds.value=bd;
+  fillBirthSelects(ys,ms,ds,{y:by,m:bm,d:bd});
+  document.getElementById('leap0').checked=false;
   setCalType(0);   // 링크에 담긴 값은 양력 기준 (setCalType 안에서 미리보기도 새로고침돼요)
   showTab(0);
 })();
