@@ -116,7 +116,7 @@
     const code=$('tasteFriendCode').value;
     if(!current||current.origin!=='mine'||!engine.getType(code)){$('tasteComparison').replaceChildren();return;}
     const friend=engine.getType(code),comparison=engine.compare(current.type.code,code);
-    $('tasteComparison').innerHTML=`<div class="tc-compare-title">${esc(friend.name)}와<br>네 가지 취향 중 ${comparison.same}개가 같아요</div>`+
+    $('tasteComparison').innerHTML=`<div class="tc-compare-title">친구 · ${esc(friend.name)}<br>네 가지 취향 중 ${comparison.same}개가 같아요</div>`+
       '<div class="tc-compare-row"><span>기준</span><b>나</b><b>친구</b></div>'+
       comparison.axes.map(axis=>`<div class="tc-compare-row"><span>${axis.axis}</span><span>${axis.mine}</span><span class="${axis.same?'match':''}">${axis.friend}${axis.same?' ✓':''}</span></div>`).join('')+
       `<p class="tc-compare-tip">${comparison.tips.map(esc).join('<br>')}</p><p class="tc-note">다르다고 안 맞는 사이는 아니에요. 같이 메뉴를 고를 때 참고해 주세요.</p>`;
