@@ -824,6 +824,7 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
     </div>
     <div id="diaryViewDex" style="display:none">
       <div class="dex-progress" id="dexProgress"></div>
+      <p class="streak-sub" style="margin:0 0 16px;line-height:1.8">현재 추천하는 일반 메뉴를 모아요. 같은 음식의 바뀐 이름은 이어서 인정하고, 추천에서 제외된 메뉴는 달성률에 포함하지 않아요. 이전 다이어리 기록은 그대로 남아요.</p>
       <div id="dexGrid"></div>
     </div>
   </div>
@@ -2132,7 +2133,7 @@ if(_streakToday.milestone){
   setTimeout(()=>showToast(`🎉 ${_streakToday.milestone}일 연속 방문 달성! 대단해요`,4500),800);
 }
 // 예전 다이어리 기록에 있던 메뉴도 도감에 반영
-collectMenus(loadDiary().map(e=>e.menu));
+// 도감 목록 초기화 뒤에 기존 기록을 연결합니다.
 
 let state=null,moodIdx=0;
 document.querySelectorAll('.mood-chip').forEach(c=>{c.addEventListener('click',()=>{
@@ -2546,16 +2547,33 @@ const MENU_DEX=(function(){
 })();
 const MENU_DEX_TOTAL=MENU_DEX.reduce((s,a)=>s+a.length,0);
 
-function loadDex(){
-  try{return JSON.parse(localStorage.getItem('sajuDex')||'[]')}catch(e){return []}
+// 이름만 바뀐 동일 음식만 연결합니다. 다른 음식으로 교체된 기록은 승계하지 않습니다.
+const DEX_ALIASES=Object.freeze({
+  '만두국':'만둣국','쌈밥 정식':'쌈밥','삼겹살 상추쌈':'삼겹살',
+  '된장찌개와 흰쌀밥':'된장찌개','청국장정식':'청국장',
+  '수육과 보쌈':'보쌈','매운 낙지볶음':'낙지볶음',
+  '나물비빔밥':'비빔밥'
+});
+const DEX_NAMES=new Set(MENU_DEX.flat());
+function readDexHistory(){
+  try{const data=JSON.parse(localStorage.getItem('sajuDex')||'[]');return Array.isArray(data)?data.filter(n=>typeof n==='string'):[];}catch(e){return [];}
 }
-// 메뉴 이름들을 도감에 추가. 새로 추가된 개수를 돌려준다.
+function normalizeDexName(name){
+  if(typeof name!=='string')return null;
+  const canonical=Object.prototype.hasOwnProperty.call(DEX_ALIASES,name)?DEX_ALIASES[name]:name;
+  return DEX_NAMES.has(canonical)?canonical:null;
+}
+function loadDex(){return [...new Set(readDexHistory().map(normalizeDexName).filter(Boolean))];}
+// 지난 기록은 보존하고 현재 도감에 있는 메뉴만 새 수집으로 셉니다.
 function collectMenus(names){
-  let dex=loadDex(),added=0;
-  names.forEach(n=>{if(n&&dex.indexOf(n)<0){dex.push(n);added++;}});
-  if(added){try{localStorage.setItem('sajuDex',JSON.stringify(dex))}catch(e){}}
-  return added;
+  if(!Array.isArray(names))return 0;
+  const history=readDexHistory(),owned=new Set(loadDex()),added=[];
+  for(const name of names){const canonical=normalizeDexName(name);if(canonical&&!owned.has(canonical)){owned.add(canonical);added.push(canonical);}}
+  if(!added.length)return 0;
+  try{localStorage.setItem('sajuDex',JSON.stringify([...new Set([...history,...added])]));return added.length;}catch(e){return 0;}
 }
+// 먼저 MENU_DEX와 별칭을 초기화한 뒤 이전 다이어리의 수집 기록을 반영합니다.
+collectMenus(loadDiary().map(e=>e.menu));
 
 function renderDex(){
   const dex=loadDex();
@@ -2563,7 +2581,7 @@ function renderDex(){
   const pct=MENU_DEX_TOTAL?Math.round(got/MENU_DEX_TOTAL*100):0;
   document.getElementById('dexProgress').innerHTML=
     `<div class="dex-progress-num">${got} <span style="font-size:13px;color:var(--txd)">/ ${MENU_DEX_TOTAL}</span></div>`+
-    `<div class="streak-sub">지금까지 만난 메뉴 · ${pct}%</div>`+
+    `<div class="streak-sub">일반 메뉴 ${MENU_DEX_TOTAL}종 중 수집 · ${pct}%</div>`+
     `<div class="dex-progress-bar"><div class="dex-progress-fill" style="width:${pct}%"></div></div>`;
   document.getElementById('dexGrid').innerHTML=MENU_DEX.map((arr,el)=>{
     const owned=arr.filter(n=>dex.indexOf(n)>=0).length;

@@ -150,3 +150,6 @@ sajumenu.com 레포(blue0120xxx/sajumenu)에 새 가이드 글 초안 1개를 PR
 - tests/common-menu-catalog.json은 검토한 일반 메뉴명 목록입니다. 새 메뉴는 널리 판매되는지 확인하고 이 목록과 설명, 맵기·아침 분류도 함께 갱신합니다. 임의 재료를 덧붙여 새로운 메뉴명을 만들지 않습니다.
 - 일반 메뉴 90종, 오행×기분의 30개 조합마다 5개 후보를 제공합니다. 음식 이름 변경 시 s/r 설명도 함께 확인합니다.
 - node --test tests/core.test.cjs tests/taste.test.cjs tests/menu-catalog.test.cjs
+- 도감은 현재 OH_MENUS의 중복 없는 90종을 자동 반영합니다. 이름만 바뀐 음식은 DEX_ALIASES로 기존 수집을 연결하며 다른 음식으로 교체된 메뉴에는 수집을 부여하지 않습니다.
+- sajuDex의 과거 기록과 다이어리는 보존합니다. 현재 목록 밖의 메뉴는 달성률·새 수집 개수에서 제외합니다. 저장 실패 때는 수집 성공으로 알리지 않습니다.
+- 도감 검증: node --test tests/dex.test.cjs (별칭 병합, 기존 기록 보존, 잘못된 저장값, 저장 차단, 90종 완성도).
