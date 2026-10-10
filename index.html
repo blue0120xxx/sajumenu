@@ -262,6 +262,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .meal-name{font-size:13px;font-weight:700;color:var(--tx)}
 .meal-desc{font-size:10px;color:var(--txd);margin-top:1px;line-height:1.4}
 .meal-badge{flex-shrink:0;font-size:9px;font-weight:700;color:var(--gold);background:#FBF0DA;border:1px solid var(--golddim);border-radius:10px;padding:2px 6px}
+.meal-empty{font-size:12px;color:var(--txm);text-align:center;padding:14px 0}
 /* 메뉴 찾기 링크 버튼 */
 .menu-find-row{display:flex;gap:8px;margin:14px 0 2px}
 .btn-find{flex:1;padding:11px;border:1px solid var(--b2);border-radius:10px;background:var(--s2);color:var(--txd);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -496,9 +497,12 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
 .input-message{font-size:12px;color:var(--red);line-height:1.6;margin:8px 0}
 .input-message:empty{display:none}
 .leap-control{font-size:12px;color:var(--txd);margin:4px 0 12px;line-height:1.7}
-.leap-control input,.menu-preference input{accent-color:var(--gold);margin-right:6px}
+.leap-control input,.menu-preference input,.meal-check input{accent-color:var(--gold);margin-right:6px}
 [hidden]{display:none!important}
 .menu-preference{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txd);padding:10px 0 14px}
+.meal-check-label{font-size:11px;color:var(--txm);padding-top:6px}
+.meal-check-row{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 0 4px}
+.meal-check{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--txd)}
 .detail-panel{border:1px solid var(--b1);border-radius:12px;margin:12px 0;background:var(--s2);padding:12px}
 .detail-panel summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--txd);padding:4px}
 .detail-panel[open]>summary{margin-bottom:12px}
@@ -568,6 +572,13 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
       <input class="date-input" type="date" id="tg0Date" onchange="onTarget0Change()">
     </div>
 
+    <div class="meal-check-label">확인하고 싶은 끼니를 골라주세요 (여러 개 선택 가능)</div>
+    <div class="meal-check-row" id="mealCheckRow">
+      <label class="meal-check"><input type="checkbox" id="chkBreakfast" checked onchange="onMealPreferenceChange()">🌅 아침</label>
+      <label class="meal-check"><input type="checkbox" id="chkLunch" checked onchange="onMealPreferenceChange()">☀️ 점심</label>
+      <label class="meal-check"><input type="checkbox" id="chkDinner" checked onchange="onMealPreferenceChange()">🌙 저녁</label>
+      <label class="meal-check"><input type="checkbox" id="chkLateNight" onchange="onMealPreferenceChange()">🌃 야식</label>
+    </div>
     <label class="menu-preference"><input type="checkbox" id="mildOnly" onchange="onMealPreferenceChange()">매운 메뉴는 빼주세요</label>
     <p class="input-message" id="birthError" role="status" aria-live="polite"></p>
     <button class="btn-go" onclick="generate()">🍚 오늘 먹을 메뉴 뽑기</button>
@@ -620,7 +631,7 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
     </div>
     <!-- 끼니별 메뉴 -->
     <div class="menu-card">
-      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">아침은 부담 적게, 세 끼는 서로 다르게</div></div></div>
+      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">끼니마다 어울리는 메뉴를 서로 다르게</div></div></div>
       <div class="meal-row" id="mealRow"></div>
     </div>
     <!-- 금기 메뉴 -->
@@ -2331,17 +2342,19 @@ function generate(isRefine){
   document.getElementById('todayWord').textContent='"'+fill(todayWord)+'"';
 
   // 아침 후보와 간식 제외 목록을 적용하고, 점심이 매운 날에는 저녁을 담백하게 선택한다.
-  const meals=[
-    {when:'아침',emoji:'🌅',data:mealPlan.breakfast},
-    {when:'점심',emoji:'☀️',data:mealPlan.main,primary:true},
-    {when:'저녁',emoji:'🌙',data:mealPlan.dinner},
+  const allMeals=[
+    {when:'아침',emoji:'🌅',data:mealPlan.breakfast,checkId:'chkBreakfast'},
+    {when:'점심',emoji:'☀️',data:mealPlan.main,primary:true,checkId:'chkLunch'},
+    {when:'저녁',emoji:'🌙',data:mealPlan.dinner,checkId:'chkDinner'},
+    {when:'야식',emoji:'🌃',data:mealPlan.lateNight,checkId:'chkLateNight'},
   ];
-  document.getElementById('mealRow').innerHTML=meals.map(x=>
+  const meals=allMeals.filter(x=>document.getElementById(x.checkId).checked);
+  document.getElementById('mealRow').innerHTML=meals.length?meals.map(x=>
     `<div class="meal-item${x.primary?' primary':''}">`+
     `<div class="meal-when"><span class="meal-emoji">${x.emoji}</span>${x.when}</div>`+
     `<div class="meal-body"><div class="meal-name">${x.data.m}</div><div class="meal-desc">${x.data.s}</div></div>`+
     (x.primary?'<div class="meal-badge">추천</div>':'')+
-    `</div>`).join('');
+    `</div>`).join(''):'<div class="meal-empty">위에서 보고 싶은 끼니를 골라주세요</div>';
 
   // 금기 메뉴: 나를 극하는 오행의 음식
   const tabooOh=CTRL.findIndex(v=>v===myOh);
@@ -2377,7 +2390,8 @@ function generate(isRefine){
     cta:'생년월일만 넣으면 오늘 먹을 메뉴가 딱',
   });
 
-  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}\n\n🕰️ 끼니별 — 아침 ${meals[0].data.m} / 점심 ${meals[1].data.m} / 저녁 ${meals[2].data.m}\n\n⚠️ 오늘의 메뉴 참고: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
+  const mealsLine=meals.length?`\n\n🕰️ 끼니별 — ${meals.map(x=>`${x.when} ${x.data.m}`).join(' / ')}`:'';
+  window._shareText=`🔮 ${todayStr} 나의 사주 메뉴\n\n년주 ${yp.name} · 일주 ${dp.name} · 일진 ${tdp.name}\n${OH_EMOJI[myOh]} 나의 오행: ${OH_NAME[myOh]}(${OH_CHAR[myOh]})\n\n${rd.emoji} ${rd.label}\n${fill(fortuneTemplate)}\n\n🍽️ 오늘의 메뉴: ${menuData.m}\n${fill(menuData.r)}${mealsLine}\n\n⚠️ 오늘의 메뉴 참고: ${tabooData.food}\n${fill(tabooData.reason)}\n\n"${fill(todayWord)}"\n\n#사주메뉴 #오행 #오늘뭐먹지 #${OH_NAME[myOh]}기운`;
   window._kakaoText0=`🔮 오늘 나는 ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운! 사주로 알아본 오늘의 메뉴는 "${menuData.m}" 🍽️ 너의 메뉴는 뭘까?`;
   // 일반 결과 공유에는 생년월일을 넣지 않는다. 생일 공유는 명시적인 궁합 초대에서만 제공한다.
   window._shareLink0=`${location.origin}${location.pathname}`;
