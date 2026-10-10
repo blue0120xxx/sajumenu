@@ -250,18 +250,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 /* 화면 하단에 잠깐 떴다 사라지는 알림 */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--tx);color:#fff;padding:12px 20px;border-radius:24px;font-size:12px;font-weight:700;box-shadow:var(--sh-md);opacity:0;transition:all .4s var(--ease);z-index:9999;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-/* 끼니별 메뉴 카드 */
-.meals-icon{background:#EAF3EE;color:var(--green)}
-.meals-color{color:var(--green)}
-.meal-row{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.meal-item{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 12px}
-.meal-item.primary{border-color:var(--gold2);background:#FCF6E8}
-.meal-when{flex-shrink:0;width:44px;text-align:center;font-size:11px;font-weight:700;color:var(--txm)}
-.meal-when .meal-emoji{font-size:16px;display:block;margin-bottom:1px}
-.meal-body{flex:1;min-width:0}
-.meal-name{font-size:13px;font-weight:700;color:var(--tx)}
-.meal-desc{font-size:10px;color:var(--txd);margin-top:1px;line-height:1.4}
-.meal-badge{flex-shrink:0;font-size:9px;font-weight:700;color:var(--gold);background:#FBF0DA;border:1px solid var(--golddim);border-radius:10px;padding:2px 6px}
+/* 선택한 끼니가 없을 때 안내 문구 */
 .meal-empty{font-size:12px;color:var(--txm);text-align:center;padding:14px 0}
 /* 메뉴 찾기 링크 버튼 */
 .menu-find-row{display:flex;gap:8px;margin:14px 0 2px}
@@ -594,18 +583,8 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
 
   <div class="result-wrap" id="result">
     <div id="shareCard0">
-    <!-- 메뉴 (사이트의 메인 기능) — 결과 맨 위, 가장 크게 -->
-    <div class="menu-card hero">
-      <div class="menu-eyebrow">🍽️ 오늘 당신의 메뉴는</div>
-      <div class="menu-name-big" id="menuName"></div>
-      <div class="menu-sub-txt" id="menuSub"></div>
-      <div class="menu-why" id="menuWhy"></div>
-      <div class="menu-find-row" id="menuFindRow0" style="display:none">
-        <a class="btn-find primary" id="findMap0" target="_blank" rel="noopener">📍 근처 맛집 찾기</a>
-        <a class="btn-find" id="findSearch0" target="_blank" rel="noopener">🔍 후기 보기</a>
-      </div>
-      <div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text" id="reasonText"></div></div>
-    </div>
+    <!-- 메뉴 (사이트의 메인 기능) — 결과 맨 위, 체크한 끼니 전부 가장 크게 -->
+    <div id="heroMenus"></div>
     <div class="share-row near-menu">
       <button class="btn-kakao" onclick="shareKakao(window._kakaoText0, window._shareLink0)">💬 카카오톡 공유</button>
       <button class="btn-share" id="cpBtn" onclick="copyResult()">📋 텍스트 복사</button>
@@ -628,11 +607,6 @@ a.mode-btn{text-decoration:none;display:flex;align-items:center;justify-content:
     <div class="saju-banner">
       <div class="saju-pillars" id="rPillars"></div>
       <div class="relation-result" id="rRelation"></div>
-    </div>
-    <!-- 끼니별 메뉴 -->
-    <div class="menu-card">
-      <div class="card-head"><div class="cicon meals-icon">🕰️</div><div><div class="ctag meals-color">끼니별 메뉴</div><div class="csub">끼니마다 어울리는 메뉴를 서로 다르게</div></div></div>
-      <div class="meal-row" id="mealRow"></div>
     </div>
     <!-- 금기 메뉴 -->
     <div class="taboo-card">
@@ -2280,7 +2254,16 @@ function generate(isRefine){
   }
   // 기분에 해당하는 그룹(3개)에서 날짜 기반으로 하나 선택
   const mealPlan=MenuPlanner.plan(OH_MENUS,menuEl,moodIdx,seed,document.getElementById('mildOnly').checked);
-  const menuData=mealPlan.main;
+  // 체크한 끼니만 모아서 전부 '메인'으로 크게 보여준다 (복수 선택 가능)
+  const allMeals=[
+    {when:'아침',emoji:'🌅',data:mealPlan.breakfast,checkId:'chkBreakfast'},
+    {when:'점심',emoji:'☀️',data:mealPlan.main,checkId:'chkLunch'},
+    {when:'저녁',emoji:'🌙',data:mealPlan.dinner,checkId:'chkDinner'},
+    {when:'야식',emoji:'🌃',data:mealPlan.lateNight,checkId:'chkLateNight'},
+  ];
+  const meals=allMeals.filter(x=>document.getElementById(x.checkId).checked);
+  // 공유/다이어리/미니카드 등 대표 1개가 필요한 곳엔 점심(없으면 선택된 첫 끼니)을 쓴다
+  const menuData=(meals.find(x=>x.when==='점심')||meals[0]||allMeals[1]).data;
 
   // 운세 텍스트
   const fortuneTemplate=pick(FORTUNES[rel],seed+3);
@@ -2331,30 +2314,27 @@ function generate(isRefine){
 
   document.getElementById('rSub').textContent=`${y}년 ${m}월 ${d}일생${calLabel} · ${yp.name}년 ${dp.name}일 · ${todayStr}`;
   document.getElementById('fortuneText').textContent=fill(fortuneTemplate);
-  document.getElementById('menuName').textContent=menuData.m;
-  document.getElementById('menuSub').textContent=menuData.s;
-  document.getElementById('reasonText').textContent=fill(menuData.r);
-  // 메뉴 아래 '왜 이 메뉴인지' 한 줄 요약 칩 (내 오행 + 오늘의 관계)
-  const menuWhyEl=document.getElementById('menuWhy');
-  if(menuWhyEl)menuWhyEl.innerHTML=
-    `<span class="wy" style="color:${OH_COLOR[myOh]}">${OH_EMOJI[myOh]} ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운</span>`+
-    `<span class="wy" style="color:${OH_COLOR[myOh]}">${rd.emoji} ${rd.label.split(' — ')[0]}</span>`;
   document.getElementById('todayWord').textContent='"'+fill(todayWord)+'"';
 
-  // 아침 후보와 간식 제외 목록을 적용하고, 점심이 매운 날에는 저녁을 담백하게 선택한다.
-  const allMeals=[
-    {when:'아침',emoji:'🌅',data:mealPlan.breakfast,checkId:'chkBreakfast'},
-    {when:'점심',emoji:'☀️',data:mealPlan.main,primary:true,checkId:'chkLunch'},
-    {when:'저녁',emoji:'🌙',data:mealPlan.dinner,checkId:'chkDinner'},
-    {when:'야식',emoji:'🌃',data:mealPlan.lateNight,checkId:'chkLateNight'},
-  ];
-  const meals=allMeals.filter(x=>document.getElementById(x.checkId).checked);
-  document.getElementById('mealRow').innerHTML=meals.length?meals.map(x=>
-    `<div class="meal-item${x.primary?' primary':''}">`+
-    `<div class="meal-when"><span class="meal-emoji">${x.emoji}</span>${x.when}</div>`+
-    `<div class="meal-body"><div class="meal-name">${x.data.m}</div><div class="meal-desc">${x.data.s}</div></div>`+
-    (x.primary?'<div class="meal-badge">추천</div>':'')+
-    `</div>`).join(''):'<div class="meal-empty">위에서 보고 싶은 끼니를 골라주세요</div>';
+  // 체크한 끼니 전부를 같은 크기의 '메인' 카드로 보여준다 (왜 이 메뉴인지 칩은 모든 카드 공통)
+  const menuWhyHtml=
+    `<span class="wy" style="color:${OH_COLOR[myOh]}">${OH_EMOJI[myOh]} ${OH_NAME[myOh]}(${OH_CHAR[myOh]}) 기운</span>`+
+    `<span class="wy" style="color:${OH_COLOR[myOh]}">${rd.emoji} ${rd.label.split(' — ')[0]}</span>`;
+  const heroEl=document.getElementById('heroMenus');
+  heroEl.innerHTML=meals.length?meals.map((x,i)=>
+    `<div class="menu-card hero">`+
+    `<div class="menu-eyebrow">🍽️ ${x.when} 메뉴는</div>`+
+    `<div class="menu-name-big">${x.data.m}</div>`+
+    `<div class="menu-sub-txt">${x.data.s}</div>`+
+    `<div class="menu-why">${menuWhyHtml}</div>`+
+    `<div class="menu-find-row" id="menuFindRow${i}" style="display:none">`+
+    `<a class="btn-find primary" id="findMap${i}" target="_blank" rel="noopener">📍 근처 맛집 찾기</a>`+
+    `<a class="btn-find" id="findSearch${i}" target="_blank" rel="noopener">🔍 후기 보기</a>`+
+    `</div>`+
+    `<div class="reason-box"><div class="reason-label">☽ 오행과의 연결고리</div><div class="reason-text">${fill(x.data.r)}</div></div>`+
+    `</div>`).join('')
+    :`<div class="menu-card hero"><div class="menu-eyebrow">🍽️ 오늘 당신의 메뉴는</div><div class="meal-empty">위에서 보고 싶은 끼니를 골라주세요</div></div>`;
+  meals.forEach((x,i)=>setMenuFindLinks('menuFindRow'+i,'findMap'+i,'findSearch'+i,x.data.m));
 
   // 금기 메뉴: 나를 극하는 오행의 음식
   const tabooOh=CTRL.findIndex(v=>v===myOh);
@@ -2397,17 +2377,14 @@ function generate(isRefine){
   window._shareLink0=`${location.origin}${location.pathname}`;
   window._shareText+=`\n\n👉 나도 사주 메뉴 보기\n${window._shareLink0}`;
 
-  // 다이어리에 자동 저장
-  saveDiaryEntry(td,myOh,menuData.m,rd.label,rd.emoji);
+  // 다이어리에 자동 저장 (고른 끼니가 있을 때만)
+  if(meals.length)saveDiaryEntry(td,myOh,menuData.m,rd.label,rd.emoji);
 
   // 결과 화면 아래에 연속 방문 안내 칩 표시
   renderStreakChip('streakChip0');
 
-  // 메뉴 찾기 링크(지도·검색) 연결
-  setMenuFindLinks('menuFindRow0','findMap0','findSearch0',menuData.m);
-
   // 오늘 나온 메뉴들을 도감에 추가
-  const dexAdded=collectMenus([menuData.m].concat(meals.map(x=>x.data.m)));
+  const dexAdded=collectMenus(meals.map(x=>x.data.m));
   if(dexAdded>0)showToast(`🍱 도감에 새 메뉴 ${dexAdded}개 추가! 다이어리 탭에서 확인하세요`);
 }
 
