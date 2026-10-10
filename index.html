@@ -259,6 +259,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .btn-diary-del:hover{border-color:var(--red);color:var(--red)}
 .btn-diary-clear{width:100%;padding:11px;border:1px solid var(--b2);border-radius:10px;background:transparent;color:var(--txm);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .15s}
 .btn-diary-clear:hover{border-color:var(--red);color:var(--red)}
+.btn-diary-more{width:100%;padding:12px;border:1px dashed var(--b2);border-radius:10px;background:var(--s2);color:var(--gold);font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.btn-diary-more:hover{border-color:var(--gold);box-shadow:var(--sh-sm)}
 /* 연속 방문 스트릭 */
 .streak-banner{background:linear-gradient(135deg,#FFF3DE,#FBE9CE);border:1px solid var(--b2);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center}
 .streak-fire{font-size:26px;line-height:1}
@@ -288,7 +290,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .dex-progress-num{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:900;color:var(--gold)}
 .dex-progress-bar{height:8px;background:var(--b1);border-radius:6px;margin-top:10px;overflow:hidden}
 .dex-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:6px;transition:width .6s var(--ease)}
+#dexGrid{max-height:440px;overflow-y:auto;overflow-x:hidden;padding:14px;border:1px solid var(--b1);border-radius:12px;background:var(--s1)}
 .dex-el-group{margin-bottom:16px}
+.dex-el-group:last-child{margin-bottom:0}
 .dex-el-title{font-size:11px;font-weight:700;color:var(--txm);margin-bottom:8px}
 .dex-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
 .dex-item{background:var(--s2);border:1px solid var(--b1);border-radius:10px;padding:10px 6px;text-align:center;font-size:10px;font-weight:700;color:var(--tx);line-height:1.3;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
@@ -2433,6 +2437,7 @@ function saveDiaryEntry(dateObj,oh,menu,relLabel,relEmoji){
   if(document.getElementById('tab3').classList.contains('active'))renderDiary();
 }
 
+let diaryShowLimit=10;
 function renderDiary(){
   renderStreakBanner();
   const diary=loadDiary();
@@ -2459,7 +2464,8 @@ function renderDiary(){
     <div class="diary-stat"><div class="diary-stat-num">${max}</div><div class="diary-stat-lbl">${OH_NICK[topOh]} 기운 횟수</div></div>
   `;
 
-  listEl.innerHTML=diary.map(e=>{
+  const shown=diary.slice(0,diaryShowLimit);
+  listEl.innerHTML=shown.map(e=>{
     const[yy,mm,dd]=e.date.split('-');
     return `<div class="diary-item">
       <div class="diary-date-badge"><div class="diary-date-day">${parseInt(dd)}</div><div class="diary-date-md">${parseInt(mm)}월 · ${yy.slice(2)}년</div></div>
@@ -2467,7 +2473,8 @@ function renderDiary(){
       <div class="diary-info"><div class="diary-menu">${e.menu}</div><div class="diary-desc">${e.relEmoji} ${e.relLabel} · ${ohLabel(e.oh)} 기운</div></div>
       <button class="btn-diary-del" onclick="deleteDiaryEntry('${e.date}')">×</button>
     </div>`;
-  }).join('');
+  }).join('')
+  + (diary.length>diaryShowLimit?`<button class="btn-diary-more" onclick="diaryShowLimit+=10;renderDiary()">더 보기 (${diary.length-diaryShowLimit}개 더)</button>`:'');
   clearBtn.style.display='block';
 }
 
