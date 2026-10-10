@@ -39,8 +39,12 @@
 :root{--bg:#FAF3E3;--s1:#fff;--b1:#EADFC2;--b2:#DCC998;--gold:#B07A22;--golddim:#8C6A22;--tx:#2B2118;--txd:#4A3D2C;--txm:#7A6A4D;--red:#B8412E}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);line-height:1.85;-webkit-text-size-adjust:100%}
 img{max-width:100%}
-.topbar{position:sticky;top:0;z-index:10;background:rgba(250,243,227,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:12px 20px}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(250,243,227,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--b1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .topbar a{font-family:'Noto Serif KR',serif;font-weight:900;font-size:14px;color:var(--tx);text-decoration:none}
+.gnav{display:flex;gap:6px;flex-wrap:wrap}
+.gnav a{font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:11px;color:var(--txd);text-decoration:none;padding:6px 10px;border:1px solid var(--b2);border-radius:20px;white-space:nowrap;transition:all .15s}
+.gnav a:hover{border-color:var(--gold);color:var(--gold)}
+.gnav a.active{background:linear-gradient(135deg,var(--gold),var(--red));border-color:var(--gold);color:#fff}
 .wrap{max-width:680px;margin:0 auto;padding:24px 20px 60px}
 .crumb{font-size:12px;color:var(--txm);margin-bottom:14px}
 .crumb a{color:var(--gold);text-decoration:none}
@@ -67,7 +71,15 @@ article strong{color:var(--golddim)}
 </style>
 </head>
 <body>
-<header class="topbar"><a href="/">🔮 오늘의 사주 메뉴</a></header>
+<header class="topbar">
+<a href="/">🔮 오늘의 사주 메뉴</a>
+<nav class="gnav">
+<a href="/">사주메뉴</a>
+<a href="/?m=taste">입맛테스트</a>
+<a href="/?m=region">지역메뉴</a>
+<a href="/guide/" class="active">가이드</a>
+</nav>
+</header>
 <div class="wrap">
 <nav class="crumb"><a href="/">홈</a> › <a href="/guide/">가이드</a> › 가을 제철 음식</nav>
 <h1>가을 제철 음식 — 가을에 꼭 먹으면 좋은 메뉴 정리</h1>
