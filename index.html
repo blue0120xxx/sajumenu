@@ -204,6 +204,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);
 .reason-box{background:#F3F9F0;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 16px}
 .reason-label{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;opacity:.9}
 .reason-text{font-family:'Noto Serif KR',serif;font-size:13px;line-height:2;color:#2E4A32;word-break:keep-all}
+/* 끼니별로 다른 색감을 입혀 아침/점심/저녁/야식 카드를 한눈에 구분한다 */
+.menu-card.hero.mh-breakfast{background:linear-gradient(160deg,#FFFBF5,#FBEBD6);border-color:#E6C397}
+.menu-card.hero.mh-breakfast .menu-eyebrow{color:#B9793A}
+.menu-card.hero.mh-breakfast .menu-why .wy{border-color:#E6C397}
+.menu-card.hero.mh-breakfast .reason-box{background:#FDF3E4;border-left-color:#B9793A}
+.menu-card.hero.mh-breakfast .reason-label{color:#B9793A}
+.menu-card.hero.mh-dinner{background:linear-gradient(160deg,#FAFBFF,#E6EAF7);border-color:#C0CAEA}
+.menu-card.hero.mh-dinner .menu-eyebrow{color:#4C5CA3}
+.menu-card.hero.mh-dinner .menu-why .wy{border-color:#C0CAEA}
+.menu-card.hero.mh-dinner .reason-box{background:#F0F2FA;border-left-color:#4C5CA3}
+.menu-card.hero.mh-dinner .reason-label{color:#4C5CA3}
+.menu-card.hero.mh-latenight{background:linear-gradient(160deg,#FBF8FF,#EEE1F5);border-color:#D2BBE2}
+.menu-card.hero.mh-latenight .menu-eyebrow{color:var(--purple)}
+.menu-card.hero.mh-latenight .menu-why .wy{border-color:#D2BBE2}
+.menu-card.hero.mh-latenight .reason-box{background:#F7EFFA;border-left-color:var(--purple)}
+.menu-card.hero.mh-latenight .reason-label{color:var(--purple)}
 /* 한마디 */
 .today-word{background:linear-gradient(135deg,#F5EEFA,#FBF0DA);border:1px solid #DCC8E8;border-radius:12px;padding:16px 18px;margin-bottom:12px;text-align:center}
 /* 금기 메뉴 */
@@ -2262,10 +2278,10 @@ function generate(isRefine){
   const mealPlan=MenuPlanner.plan(OH_MENUS,menuEl,moodIdx,seed,document.getElementById('mildOnly').checked);
   // 체크한 끼니만 모아서 전부 '메인'으로 크게 보여준다 (복수 선택 가능)
   const allMeals=[
-    {when:'아침',emoji:'🌅',data:mealPlan.breakfast,checkId:'chkBreakfast'},
-    {when:'점심',emoji:'☀️',data:mealPlan.main,checkId:'chkLunch'},
-    {when:'저녁',emoji:'🌙',data:mealPlan.dinner,checkId:'chkDinner'},
-    {when:'야식',emoji:'🌃',data:mealPlan.lateNight,checkId:'chkLateNight'},
+    {when:'아침',emoji:'🌅',data:mealPlan.breakfast,checkId:'chkBreakfast',cls:'mh-breakfast'},
+    {when:'점심',emoji:'☀️',data:mealPlan.main,checkId:'chkLunch',cls:''},
+    {when:'저녁',emoji:'🌙',data:mealPlan.dinner,checkId:'chkDinner',cls:'mh-dinner'},
+    {when:'야식',emoji:'🌃',data:mealPlan.lateNight,checkId:'chkLateNight',cls:'mh-latenight'},
   ];
   const meals=allMeals.filter(x=>document.getElementById(x.checkId).checked);
   // 공유/다이어리/미니카드 등 대표 1개가 필요한 곳엔 점심(없으면 선택된 첫 끼니)을 쓴다
@@ -2328,7 +2344,7 @@ function generate(isRefine){
     `<span class="wy" style="color:${OH_COLOR[myOh]}">${rd.emoji} ${rd.label.split(' — ')[0]}</span>`;
   const heroEl=document.getElementById('heroMenus');
   heroEl.innerHTML=meals.length?meals.map((x,i)=>
-    `<div class="menu-card hero">`+
+    `<div class="menu-card hero ${x.cls}">`+
     `<div class="menu-eyebrow">🍽️ ${x.when} 메뉴는</div>`+
     `<div class="menu-name-big">${x.data.m}</div>`+
     `<div class="menu-sub-txt">${x.data.s}</div>`+
