@@ -1,0 +1,20 @@
+# 제철 메뉴 만료 점검: index.html 에 `season-end:날짜` 가 붙은 메뉴가 날짜를 넘기면 실패한다.
+# 실패하면 GitHub 가 강민성님 이메일로 알려줘요 → 그 메뉴를 빼면 됩니다.
+name: 제철 메뉴 만료 확인
+
+on:
+  schedule:
+    # 매일 00:30 UTC = 한국시간 오전 9시 30분
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  season:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 제철 메뉴 만료 검사
+        run: node --test tests/season.test.cjs
