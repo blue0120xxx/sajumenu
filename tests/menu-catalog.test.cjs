@@ -11,12 +11,12 @@ test('all general recommendation surfaces use reviewed common menu names',()=>{
  for(const name of names)assert.ok(allowed.has(name),'Review availability before adding: '+name);
  for(const name of ['된장비빔국수','로제투도우펀','치폴레 웜볼 도시락','매콤 타코라이스','벽돌 치즈스틱'])assert.ok(!names.includes(name));
 });
-// 기본 5개 + 주간 트렌드 메뉴(// trend: 주석)로 한 칸에 최대 6개. 트렌드 2종(굴국밥·꽃게탕) 반영 후 92종(2026-10-20)
+// 기본 5개 + 주간 트렌드 메뉴(// trend: 주석)로 한 칸에 최대 6개. 트렌드 굴국밥·꽃게탕 + 제철 전어구이·대하구이(~11/30) 반영 후 94종(2026-10-20)
 test('each element and mood has five base meals (+ at most one trend); metadata stays complete',()=>{
  assert.equal(Object.keys(data).length,5);
  for(const group of Object.values(data)){
   assert.equal(Object.keys(group).length,6);
   for(const menus of Object.values(group)){assert.ok(menus.length>=5&&menus.length<=6);assert.equal(new Set(menus.map(m=>m.m)).size,menus.length);for(const m of menus){assert.ok(m.s.trim());assert.ok(m.r.trim());}}
  }
- assert.equal(new Set(Object.values(data).flatMap(g=>Object.values(g).flat()).map(m=>m.m)).size,92);
+ assert.equal(new Set(Object.values(data).flatMap(g=>Object.values(g).flat()).map(m=>m.m)).size,94);
 });

@@ -8,10 +8,10 @@ function setup(raw='[]',diary=[],fail=false){
  const c=vm.createContext({OH_MENUS:data,OH_EMOJI:['a','b','c','d','e'],OH_NICK:['a','b','c','d','e'],loadDiary:()=>diary,document:{getElementById:id=>nodes[id]},localStorage:{getItem:()=>stored,setItem:(_,v)=>{if(fail)throw Error('blocked');stored=v;}}});
  vm.runInContext(block,c);return {c,nodes,stored:()=>stored};
 }
-test('dex initializes diary migration after catalog and has exactly 92 unique entries',()=>{
+test('dex initializes diary migration after catalog and has exactly 94 unique entries',()=>{
  const {c,nodes}=setup('[]',[{menu:'만두국'},{menu:'된장비빔국수'}]);
  assert.equal(c.loadDex().join(','),'만둣국');c.renderDex();
- assert.match(nodes.dexProgress.innerHTML,/1 .*\/ 92/);assert.equal((nodes.dexGrid.innerHTML.match(/class="dex-item[ "]/g)||[]).length,92);
+ assert.match(nodes.dexProgress.innerHTML,/1 .*\/ 94/);assert.equal((nodes.dexGrid.innerHTML.match(/class="dex-item[ "]/g)||[]).length,94);
 });
 test('renamed 통영굴국밥 keeps its collection as 굴국밥',()=>{
  const {c}=setup(JSON.stringify(['통영굴국밥']));
@@ -28,5 +28,5 @@ test('corrupted and unavailable storage cannot crash or claim successful collect
 });
 test('full collection reaches exactly 100%, ignoring retired dishes',()=>{
  const names=[...new Set(Object.values(data).flatMap(g=>Object.values(g).flat()).map(m=>m.m))];const {c,nodes}=setup(JSON.stringify([...names,'된장비빔국수']));c.renderDex();
- assert.match(nodes.dexProgress.innerHTML,/92 .*\/ 92/);assert.match(nodes.dexProgress.innerHTML,/100%/);
+ assert.match(nodes.dexProgress.innerHTML,/94 .*\/ 94/);assert.match(nodes.dexProgress.innerHTML,/100%/);
 });
